@@ -1,0 +1,8 @@
+data_sets:
+    - name: SRR5860570
+      paired: False
+      path: FASTQs/otherSec/SRR5860570/
+      experimental: control
+      readsfile: SRR5860570_1.fastq
+      source: NCBI
+      subgroups: [all,control]
