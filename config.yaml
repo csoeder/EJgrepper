@@ -1,8 +1,129 @@
 data_sets:
-    - name: SRR5860570
-      paired: False
-      path: FASTQs/otherSec/SRR5860570/
+    - name: DfMcm5
+      paired: True
+      path: 	FASTQ/controls/Df-Mcm5/
+      readsfile1: 	Df-Mcm5.R1.fq
+      readsfile2: 	Df-Mcm5.R2.fq
       experimental: control
-      readsfile: SRR5860570_1.fastq
-      source: NCBI
+      source: dannyMiller
       subgroups: [all,control]
+    - name: mcm5-01
+      paired: True
+      path: 	FASTQ/controls/mcm5-01/
+      readsfile1: 	mcm5-01.R1.fq
+      readsfile2: 	mcm5-01.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-02
+      paired: True
+      path: 	FASTQ/controls/mcm5-02/
+      readsfile1: 	mcm5-02.R1.fq
+      readsfile2: 	mcm5-02.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-03
+      paired: True
+      path: 	FASTQ/controls/mcm5-03/
+      readsfile1: 	mcm5-03.R1.fq
+      readsfile2: 	mcm5-03.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-04
+      paired: True
+      path: 	FASTQ/controls/mcm5-04/
+      readsfile1: 	mcm5-04.R1.fq
+      readsfile2: 	mcm5-04.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-05
+      paired: True
+      path: 	FASTQ/controls/mcm5-05/
+      readsfile1: 	mcm5-05.R1.fq
+      readsfile2: 	mcm5-05.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-06
+      paired: True
+      path: 	FASTQ/controls/mcm5-06/
+      readsfile1: 	mcm5-06.R1.fq
+      readsfile2: 	mcm5-06.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-07
+      paired: True
+      path: 	FASTQ/controls/mcm5-07/
+      readsfile1: 	mcm5-07.R1.fq
+      readsfile2: 	mcm5-07.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-08
+      paired: True
+      path: 	FASTQ/controls/mcm5-08/
+      readsfile1: 	mcm5-08.R1.fq
+      readsfile2: 	mcm5-08.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-09
+      paired: True
+      path: 	FASTQ/controls/mcm5-09/
+      readsfile1: 	mcm5-09.R1.fq
+      readsfile2: 	mcm5-09.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-10
+      paired: True
+      path: 	FASTQ/controls/mcm5-10/
+      readsfile1: 	mcm5-10.R1.fq
+      readsfile2: 	mcm5-10.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-11
+      paired: True
+      path: 	FASTQ/controls/mcm5-11/
+      readsfile1: 	mcm5-11.R1.fq
+      readsfile2: 	mcm5-11.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-12
+      paired: True
+      path: 	FASTQ/controls/mcm5-12/
+      readsfile1: 	mcm5-12.R1.fq
+      readsfile2: 	mcm5-12.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-13
+      paired: True
+      path: 	FASTQ/controls/mcm5-13/
+      readsfile1: 	mcm5-13.R1.fq
+      readsfile2: 	mcm5-13.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: Mcm5-A7
+      paired: True
+      path: 	FASTQ/controls/Mcm5-A7/
+      readsfile1: 	Mcm5-A7.R1.fq
+      readsfile2: 	Mcm5-A7.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+
+
+reference_genomes:
+    - name: dm6
+      species: drosophila melanogaster
+      path: /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.fa
+      fai: /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.fa.fai
+      source: UCSC Genome Browser
