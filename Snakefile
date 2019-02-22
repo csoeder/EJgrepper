@@ -5,8 +5,12 @@ configfile: 'config.yaml'
 
 ref_genome_by_name = { g['name'] : g for g in config['reference_genomes']}
 
-
-
+def return_file_relpath_by_sampname(wildcards):
+	sampname = wildcards.samplename
+	pathprefix = sample_by_name[sampname]["path"]
+	filesin = return_filename_by_sampname(sampname)
+	pathsout = ["".join([pathprefix, fq]) for fq in filesin]
+	return pathsout
 
 
 
@@ -83,6 +87,54 @@ rule fastp_clean_sample_pe:
 		"FASTP QA/QC on paired-ended reads ({wildcards.samplename}) in progress.... "
 	shell:
 		"/nas/longleaf/home/csoeder/modules/fastp/fastp {params.common_params} {params.pe_params} --in1 {input.fileIn[0]} --out1 {output.fileOut[0]} --in2 {input.fileIn[1]} --out2 {output.fileOut[1]}"
+
+
+rule FASTP_summarizer:
+	input: 
+		jason = lambda wildcards: expand("{path}{samp}.{pairt}.json", path=sample_by_name[wildcards.samplename]['path'], samp = wildcards.samplename, pairt = sample_by_name[wildcards.samplename]['paired'])
+	output:
+		jason_pruned = "meta/FASTP/{samplename}.json.pruned"
+	params:
+		runmem_gb=1,
+		runtime="5:00",
+		cores=1,
+	message:
+		"Summarizing reads for sample ({wildcards.samplename}) .... "	
+	shell:
+		"""
+		cp {input.jason} meta/FASTP/{wildcards.samplename}.json
+		python3 scripts/fastp_reporter.py {input.jason} {output.jason_pruned} -t {wildcards.samplename}
+		"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rule write_report:
+	input:
+		reference_genome_summary = ["meta/reference_genomes.summary"],
+		sequenced_reads_summary=["meta/sequenced_reads.dat"],
+	output:
+		pdf_out="thingy.pdf"
+	params:
+		runmem_gb=8,
+		runtime="1:00:00",
+		cores=2,
+	message:
+		"writing up the results.... "
+	run:
+		pandoc_path="/nas/longleaf/apps/rstudio/1.0.136/bin/pandoc"
+		pwd = subprocess.check_output("pwd",shell=True).decode().rstrip()+"/"
+		shell(""" R -e "setwd('{pwd}');Sys.setenv(RSTUDIO_PANDOC='{pandoc_path}')" -e  "peaDubDee='{pwd}'; rmarkdown::render('scripts/EJgrepper_summary.Rmd',output_file='{pwd}{output.pdf_out}')"  """)
 
 
 
