@@ -4,6 +4,9 @@ configfile: 'config.yaml'
 
 
 ref_genome_by_name = { g['name'] : g for g in config['reference_genomes']}
+sample_by_name = {c['name'] : c for c in config['data_sets']}
+
+
 
 def return_file_relpath_by_sampname(wildcards):
 	sampname = wildcards.samplename
@@ -13,6 +16,14 @@ def return_file_relpath_by_sampname(wildcards):
 	return pathsout
 
 
+def return_filename_by_sampname(sampname):
+	filenames = []
+	if sample_by_name[sampname]['paired']:
+		filenames.append(sample_by_name[sampname]['readsfile1'])
+		filenames.append(sample_by_name[sampname]['readsfile2'])
+	else:
+		filenames.append(sample_by_name[sampname]['readsfile'])
+	return filenames
 
 
 
@@ -108,7 +119,19 @@ rule FASTP_summarizer:
 
 
 
-
+rule demand_FASTQ_analytics:	#forces a FASTP clean
+	input:
+		jasons_in = expand("meta/FASTP/{samplename}.json.pruned", samplename = sample_by_name.keys())
+	output:
+		summary = "meta/sequenced_reads.dat"
+	params:
+		runmem_gb=1,
+		runtime="1:00",
+		cores=1,
+	message:
+		"Collecting read summaries for all samples ...."
+	shell:
+		"cat {input.jasons_in} > {output.summary}"
 
 
 
