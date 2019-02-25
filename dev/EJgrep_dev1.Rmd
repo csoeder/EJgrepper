@@ -1,0 +1,156 @@
+---
+title: "End Joining Signatures - dev"
+author: "Charlie Soeder"
+date: "2/15/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(readr)
+
+```
+
+
+
+## 25 February 2019
+
+Rebuilding, starting with summary stats for the materials/methods section.
+
+
+```{r include=FALSE}
+
+human_readable_croncher <- function(num_in) {
+	dig <- 3
+	num_out <- formatC(num_in, digits=dig, format='g') %>% as.numeric() %>% sitools::f2si()
+	return(num_out)
+}
+
+bam_summary_loader <- function(filename, aligner="bwa", reference='dm6'){
+	
+	tmp.df <- read_delim(filename, "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+	names(tmp.df) <- c("sample","measure","value")
+	
+	tmp.df$sample <- as.factor(tmp.df$sample)
+	tmp.df$measure <- as.factor(tmp.df$measure)
+	tmp.df$aligner <- as.factor(aligner)
+	tmp.df$reference <- as.factor(reference)
+	
+	return(tmp.df)
+	
+}
+
+
+
+
+```
+
+
+
+```{r include=FALSE}
+library("yaml")
+
+trammel <- read_yaml("../config.yaml")
+
+```
+
+Reference genomes 
+
+```{r include=FALSE, echo=FALSE}
+library("knitr")
+library("tidyverse")
+
+refGenomes_summary_df <- read_delim("meta/reference_genomes.summary", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+names(refGenomes_summary_df) <- c("refGenome","measure","value")
+
+```
+
+```{r echo=FALSE}
+refGenomes_summary_df %>% mutate( value=human_readable_croncher(value)) %>% spread(refGenome, value) %>% rename('Reference Genome:'=measure)  %>% kable(caption="Size and Consolidation of Reference Genomes")
+
+```
+
+Sequenced reads
+
+
+
+```{r include=FALSE}
+data_sets.df <- plyr::ldply(trammel$data_sets, data.frame)
+data_sets.df$name <- as.factor(data_sets.df$name)
+data_sets.df$paired<- as.factor(data_sets.df$paired)
+data_sets.df$experimental<- as.factor(data_sets.df$experimental)
+data_sets.df$source<- as.factor(data_sets.df$source)
+```
+
+
+```{r echo=FALSE, results='asis'}
+data_sets.df %>% filter(subgroups=='all') %>% group_by(experimental) %>% summarise(sample_count=n()) %>% kable(caption="Number of Sequenced Samples by Treatment")
+```
+
+
+
+```{r echo=FALSE}
+data_sets.df %>% filter(subgroups=='all') %>%  select(c(name, paired, experimental, source)) %>%  arrange(experimental, desc(name)) %>% kable(caption="Sequenced Experimental Samples")
+```
+
+
+```{r echo=FALSE, include=FALSE}
+fastp_summary <- read_delim("meta/sequenced_reads.dat", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+names(fastp_summary ) <- c("name","type","measure","value")
+fastp_summary$name <- as.factor(fastp_summary$name)
+fastp_summary$type <- as.factor(fastp_summary$type)
+fastp_summary$measure <- as.factor(fastp_summary$measure)
+```
+
+
+
+```{r echo=FALSE, include=FALSE}
+filtration_stats <- inner_join(fastp_summary %>%  filter(type=="prefiltered" | type == 'postfiltered'), data_sets.df, by=c("name"="name"))
+filtration_stats$type <- factor(filtration_stats$type, levels=c("prefiltered", "postfiltered"))
+```
+
+
+Total Starting Reads:  $`r sum( filtration_stats %>% filter(type =='prefiltered') %>%  filter(measure=='total_reads') %>% select(value) ) %>% human_readable_croncher() `$ 
+Post-QC Reads:  $`r sum( filtration_stats %>% filter(type =='postfiltered') %>%  filter(measure=='total_reads') %>% select(value) ) %>% human_readable_croncher() `$. 
+
+
+
+```{r echo=FALSE}
+pre_post_counts <- filtration_stats %>% filter(measure=='total_reads') %>%  group_by(type)  %>%  summarise(minimum = min(value), average=mean(value) , maximum = max(value)) 
+retention_percent <- filtration_stats %>% filter(measure=='total_reads') %>%  filter(subgroups=="all")%>% select(c(name,type,value)) %>%  spread(type,value) %>% mutate(retention=100*postfiltered/prefiltered) %>%  summarise(type='percent retention', minimum = min(retention), average=mean(retention) , maximum = max(retention))
+```
+```{r echo=FALSE}
+rbind(pre_post_counts, retention_percent) %>% mutate(minimum = human_readable_croncher(minimum), average=human_readable_croncher(average) , maximum = human_readable_croncher(maximum)) %>% kable(caption="Read Count and Percent Retention")
+```
+
+
+This framework is general-purpose enough that it might be a good template.............
+
+```{r echo=FALSE}
+library("ggbio")
+ggplot(filtration_stats %>% filter(measure == "q30_rate")) + geom_line(aes(group=name, x=type,y=100*value)) +  geom_point(aes(x=type, y = 100*value, color=name)) + labs(title = "Percent of Reads with a mean QUAL > 30", y="Percent QUAL > 30", x="") + theme_clear()
+
+```
+
+
+
+Dupes:
+
+```{r echo=FALSE, include=FALSE}
+dupe_stats <- inner_join(fastp_summary %>% filter(type=='duplication' & measure =='rate') %>%  mutate(percent=value*100) %>% select(c(name,percent)), data_sets.df, by=c("name"="name"))
+```
+
+```{r echo=FALSE}
+dupe_stats %>%  summarise(minimum = min(percent), average=mean(percent), median=median(percent) , maximum = max(percent)) %>% kable(caption="Percentage Duplication",digits=1)
+```
+
+```{r echo=FALSE}
+ggplot(dupe_stats) + geom_histogram(aes(x=percent), bins=15) + labs(title="Duplication Histogram", x="Read Duplication Rate (FASTP estimate)", y="Number Samples") + theme_clear()
+```
+
+
