@@ -2,7 +2,7 @@
 title: "End Joining Signatures - dev"
 author: "Charlie Soeder"
 date: "2/15/2019"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -131,7 +131,7 @@ rbind(pre_post_counts, retention_percent) %>% mutate(minimum = human_readable_cr
 
 This framework is general-purpose enough that it might be a good template.............
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
 library("ggbio")
 ggplot(filtration_stats %>% filter(measure == "q30_rate")) + geom_line(aes(group=name, x=type,y=100*value)) +  geom_point(aes(x=type, y = 100*value, color=name)) + labs(title = "Percent of Reads with a mean QUAL > 30", y="Percent QUAL > 30", x="") + theme_clear()
 
