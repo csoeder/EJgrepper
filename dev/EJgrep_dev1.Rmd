@@ -153,4 +153,11 @@ dupe_stats %>%  summarise(minimum = min(percent), average=mean(percent), median=
 ggplot(dupe_stats) + geom_histogram(aes(x=percent), bins=15) + labs(title="Duplication Histogram", x="Read Duplication Rate (FASTP estimate)", y="Number Samples") + theme_clear()
 ```
 
+## 26 February 2019
+
+
+
+
+
+
 

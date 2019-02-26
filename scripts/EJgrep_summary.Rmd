@@ -76,7 +76,7 @@ names(refGenomes_summary_df) <- c("refGenome","measure","value")
 refGenomes_summary_df %>% mutate( value=human_readable_croncher(value)) %>% spread(refGenome, value) %>% rename('Reference Genome:'=measure)  %>% kable(caption="Size and Consolidation of Reference Genomes")
 ```
 
-```{r}
+```{r  include=FALSE}
 
 refGenomes_summary_df %>% mutate( value=human_readable_croncher(value)) %>% spread(refGenome, value) %>% rename('Reference Genome:'=measure)  %>% kable(caption="Size and Consolidation of Reference Genomes")
 
@@ -168,3 +168,12 @@ dupe_stats %>%  summarise(minimum = min(percent), average=mean(percent), median=
 ```{r echo=FALSE}
 ggplot(dupe_stats) + geom_histogram(aes(x=percent), bins=15) + labs(title="Duplication Histogram", x="Read Duplication Rate (FASTP estimate)", y="Number Samples") + theme_clear()
 ```
+
+
+
+
+# Bibliography
+
+
+
+

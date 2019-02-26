@@ -111,6 +111,126 @@ data_sets:
       experimental: control
       source: dannyMiller
       subgroups: [all,control]
+    - name: mcm5-14
+      paired: True
+      path: FASTQ/controls/mcm5-14/
+      readsfile1: mcm5-14.R1.fq
+      readsfile2: mcm5-14.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-15
+      paired: True
+      path: FASTQ/controls/mcm5-15/
+      readsfile1: mcm5-15.R1.fq
+      readsfile2: mcm5-15.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-16
+      paired: True
+      path: FASTQ/controls/mcm5-16/
+      readsfile1: mcm5-16.R1.fq
+      readsfile2: mcm5-16.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-17
+      paired: True
+      path: FASTQ/controls/mcm5-17/
+      readsfile1: mcm5-17.R1.fq
+      readsfile2: mcm5-17.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-18
+      paired: True
+      path: FASTQ/controls/mcm5-18/
+      readsfile1: mcm5-18.R1.fq
+      readsfile2: mcm5-18.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-19
+      paired: True
+      path: FASTQ/controls/mcm5-19/
+      readsfile1: mcm5-19.R1.fq
+      readsfile2: mcm5-19.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-20
+      paired: True
+      path: FASTQ/controls/mcm5-20/
+      readsfile1: mcm5-20.R1.fq
+      readsfile2: mcm5-20.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-21
+      paired: True
+      path: FASTQ/controls/mcm5-21/
+      readsfile1: mcm5-21.R1.fq
+      readsfile2: mcm5-21.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-22
+      paired: True
+      path: FASTQ/controls/mcm5-22/
+      readsfile1: mcm5-22.R1.fq
+      readsfile2: mcm5-22.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-23
+      paired: True
+      path: FASTQ/controls/mcm5-23/
+      readsfile1: mcm5-23.R1.fq
+      readsfile2: mcm5-23.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-24
+      paired: True
+      path: FASTQ/controls/mcm5-24/
+      readsfile1: mcm5-24.R1.fq
+      readsfile2: mcm5-24.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-25
+      paired: True
+      path: FASTQ/controls/mcm5-25/
+      readsfile1: mcm5-25.R1.fq
+      readsfile2: mcm5-25.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-26
+      paired: True
+      path: FASTQ/controls/mcm5-26/
+      readsfile1: mcm5-26.R1.fq
+      readsfile2: mcm5-26.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-27
+      paired: True
+      path: FASTQ/controls/mcm5-27/
+      readsfile1: mcm5-27.R1.fq
+      readsfile2: mcm5-27.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
+    - name: mcm5-28
+      paired: True
+      path: FASTQ/controls/mcm5-28/
+      readsfile1: mcm5-28.R1.fq
+      readsfile2: mcm5-28.R2.fq
+      experimental: control
+      source: dannyMiller
+      subgroups: [all,control]
     - name: Mcm5-A7
       paired: True
       path: FASTQ/controls/Mcm5-A7/

@@ -2,6 +2,9 @@ configfile: 'config.yaml'
 
 
 
+#module load python/3.5.1 bwa r/3.5.0 rstudio/1.1.453
+#PATH=$PATH:/nas/longleaf/home/csoeder/modules/vcflib/bin:/nas/longleaf/home/csoeder/modules/parallel/bin
+
 
 ref_genome_by_name = { g['name'] : g for g in config['reference_genomes']}
 sample_by_name = {c['name'] : c for c in config['data_sets']}
@@ -137,6 +140,71 @@ rule demand_FASTQ_analytics:	#forces a FASTP clean
 
 
 
+rule bwa_align:
+	input:
+		reads_in = lambda wildcards: expand("{path}{sample}.clean.R{arr}.fastq", path=sample_by_name[wildcards.sample]['path'], sample=wildcards.sample, arr=[ [1,2] if sample_by_name[wildcards.sample]['paired'] else [0] ][0]),
+		ref_genome_file = lambda wildcards: ref_genome_by_name[wildcards.ref_genome]['path'],
+	output:
+		bam_out = "mapped_reads/{sample}.vs_{ref_genome}.bwa.sort.bam",
+	params:
+		runmem_gb=64,
+		runtime="64:00:00",
+		cores=8,
+	message:
+		"aligning reads from {wildcards.sample} to reference_genome {wildcards.ref_genome} .... "
+	run:
+		shell("bwa aln {input.ref_genome_file} {input.reads_in[0]} > {input.reads_in[0]}.sai ")
+		if sample_by_name[wildcards.sample]['paired']:
+			shell("bwa aln {input.ref_genome_file} {input.reads_in[1]} > {input.reads_in[1]}.sai ")
+			shell("bwa sampe {input.ref_genome_file} {input.reads_in[0]}.sai {input.reads_in[1]}.sai {input.reads_in[0]}  {input.reads_in[1]} | samtools view -Shb | samtools addreplacerg -r ID:{wildcards.sample} - | samtools sort -o {output.bam_out} - ")
+		else:
+			shell("bwa samse {input.ref_genome_file} {input.reads_in[0]}.sai {input.reads_in[0]} | samtools view -Shb | samtools addreplacerg -r ID:{wildcards.sample} -r SM:{wildcards.sample} - | samtools sort -o {output.bam_out} - ")
+		shell("samtools index {output.bam_out}")
+
+
+
+
+
+
+
+
+rule bam_reporter:
+	input:
+		bam_in = "mapped_reads/{sample}.vs_{ref_genome}.{aligner}.sort.bam"
+	output:
+		report_out = "meta/BAMs/{sample}.vs_{ref_genome}.{aligner}.summary"
+	params:
+		runmem_gb=8,
+		runtime="4:00:00",
+		cores=1,
+	message:
+		"Collecting metadata for the {wildcards.aligner} alignment of {wildcards.sample} to {wildcards.ref_genome}.... "
+	run:
+		ref_genome_idx=ref_genome_by_name[wildcards.ref_genome]['fai']
+		shell("samtools idxstats {input.bam_in} > {input.bam_in}.idxstats")
+		shell("samtools flagstat {input.bam_in} > {input.bam_in}.flagstat")
+		shell("bedtools genomecov -max 1 -ibam {input.bam_in} -g {ref_genome_idx} > {input.bam_in}.genomcov")
+		#change the -max flag as needed to set 
+		shell("""samtools depth -a {input.bam_in} | awk '{{sum+=$3; sumsq+=$3*$3}} END {{ print "average_depth\t",sum/NR; print "std_depth\t",sqrt(sumsq/NR - (sum/NR)**2)}}' > {input.bam_in}.dpthStats""")
+		#https://www.biostars.org/p/5165/
+		#save the depth file and offload the statistics to the bam_summarizer script?? 
+		shell("python3 scripts/bam_summarizer.py -f {input.bam_in}.flagstat -i {input.bam_in}.idxstats -g {input.bam_in}.genomcov -d {input.bam_in}.dpthStats -o {output.report_out} -t {wildcards.sample}")
+
+
+rule demand_BAM_analytics:
+	input:
+		bam_reports = lambda wildcards: expand("meta/BAMs/{sample}.vs_{ref_genome}.{aligner}.summary", sample=sample_by_name.keys(), ref_genome=wildcards.ref_genome, aligner=wildcards.aligner)
+	output:
+		full_report = "meta/alignments.vs_{ref_genome}.{aligner}.summary"
+	params:
+		runmem_gb=1,
+		runtime="1:00",
+		cores=1,
+	message:
+		"collecting all alignment metadata.... "
+	shell:
+		"cat {input.bam_reports} > {output.full_report}"
+
 
 
 
@@ -146,6 +214,7 @@ rule write_report:
 	input:
 		reference_genome_summary = ["meta/reference_genomes.summary"],
 		sequenced_reads_summary=["meta/sequenced_reads.dat"],
+		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa',]),
 	output:
 		pdf_out="thingy.pdf"
 	params:
