@@ -153,7 +153,10 @@ dupe_stats %>%  summarise(minimum = min(percent), average=mean(percent), median=
 ggplot(dupe_stats) + geom_histogram(aes(x=percent), bins=15) + labs(title="Duplication Histogram", x="Read Duplication Rate (FASTP estimate)", y="Number Samples") + theme_clear()
 ```
 
-## 26 February 2019
+## 27 February 2019
+
+Bioinformatics tips on INDEL calling & normalization with DSB background:
+https://genome.sph.umich.edu/w/images/b/b4/Variant_Calling_and_Filtering_for_INDELs.pdf
 
 
 

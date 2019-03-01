@@ -2,7 +2,7 @@ configfile: 'config.yaml'
 
 
 
-#module load python/3.5.1 bwa r/3.5.0 rstudio/1.1.453
+#module load python/3.5.1 samtools bedtools bwa r/3.5.0 rstudio/1.1.453
 #PATH=$PATH:/nas/longleaf/home/csoeder/modules/vcflib/bin:/nas/longleaf/home/csoeder/modules/parallel/bin
 
 
