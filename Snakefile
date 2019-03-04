@@ -163,6 +163,23 @@ rule bwa_align:
 
 
 
+rule bwa_uniq:
+	input:
+		bam_in = "mapped_reads/{sample}.vs_{ref_genome}.bwa.sort.bam"
+	output:
+		bam_out = "mapped_reads/{sample}.vs_{ref_genome}.bwaUniq.sort.bam"
+	params:
+		quality="-q 20 -F 0x0100 -F 0x0200 -F 0x0300 -F 0x04",
+		uniqueness="XT:A:U.*X0:i:1.*X1:i:0",
+		runmem_gb=16,
+		runtime="6:00:00",
+		cores=4,
+	message:
+		"filtering alignment of {wildcards.sample} to {wildcards.ref_genome} for quality and mapping uniqueness.... "	
+	run:
+		ref_genome_file=ref_genome_by_name[wildcards.ref_genome]['path']
+		shell("samtools view {params.quality} {input.bam_in} | grep -E {params.uniqueness} | samtools view -bS -T {ref_genome_file} - | samtools addreplacerg -r ID:{wildcards.sample} -r SM:{wildcards.sample} - | samtools sort -n - | samtools fixmate -m - - | samtools sort - | samtools markdup -r - {output.bam_out}")
+		shell("samtools index {output.bam_out}")
 
 
 
