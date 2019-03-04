@@ -158,9 +158,117 @@ ggplot(dupe_stats) + geom_histogram(aes(x=percent), bins=15) + labs(title="Dupli
 Bioinformatics tips on INDEL calling & normalization with DSB background:
 https://genome.sph.umich.edu/w/images/b/b4/Variant_Calling_and_Filtering_for_INDELs.pdf
 
+## 5 March 2019
+
+Going to go ahead and recycle BWA-Uniq but may want to change the algorithm later....
+
+
+```{r echo=FALSE, include=FALSE}
+
+bam_summary_loader <- function(filename, aligner="bwa", reference='dm6'){
+	
+	tmp.df <- read_delim(filename, "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+	names(tmp.df) <- c("sample","measure","value")
+	
+	tmp.df$sample <- as.factor(tmp.df$sample)
+	tmp.df$measure <- as.factor(tmp.df$measure)
+	tmp.df$aligner <- as.factor(aligner)
+	tmp.df$reference <- as.factor(reference)
+	
+	return(tmp.df)
+	
+}
 
 
 
+vs_dm6.bwa <- bam_summary_loader(filename = "meta/alignments.vs_dm6.bwa.summary",aligner="bwa", reference="dm6")
+vs_dm6.bwaUniq <- bam_summary_loader(filename = "meta/alignments.vs_dm6.bwaUniq.summary",aligner="bwaUniq", reference="dm6")
 
+all_alignments <- rbind(vs_dm6.bwa, vs_dm6.bwaUniq)
+
+
+
+readcount_process <- all_alignments %>%  filter( (measure=='total_read_count' & aligner=="bwa") | measure == 'total_mapped_count' ) %>% mutate(measure=ifelse(aligner=="bwaUniq", "filtered_mapped_count", ifelse(measure=="total_read_count","total_read_count","total_mapped_count"))) 
+readcount_process$measure <- factor(readcount_process$measure, levels = c('total_read_count','total_mapped_count','filtered_mapped_count'))
+
+
+ggplot(readcount_process) + geom_line(aes(group=sample, x=measure,y=value)) + geom_point(aes(x=measure, y=value, group=sample,color=sample))  + labs(title="Read Counts by Processing Step: Unmapped, Mapped, Filtered", x="", y="Number Reads" ) + scale_y_log10()  + theme_clear() + theme(axis.text.x = element_text(angle = -45, hjust = 0)) 
+
+```
+
+
+
+```{r echo=FALSE}
+
+readcount_process.spread <- readcount_process %>% select(-c(aligner)) %>%  spread(measure, value) %>%  mutate(mapping_retention=total_mapped_count/total_read_count, filter_retention = filtered_mapped_count/total_mapped_count)
+
+
+readcount_process.spread%>% gather(total_read_count:filtered_mapped_count, key="measure", value="value") %>%  group_by(measure) %>% summarise(minimum = min(value), average=mean(value), median = median(value), maximum = max(value)) %>% mutate(minimum = human_readable_croncher(minimum), average=human_readable_croncher(average), median = human_readable_croncher(median), maximum = human_readable_croncher(maximum)) %>% kable(caption="Read Counts During Alignment & Filtration")
+
+```
+
+
+
+```{r echo=FALSE}
+readcount_process.spread %>% gather(mapping_retention:filter_retention, key="measure", value="value") %>%  group_by(measure) %>% summarise(minimum = min(100*value), average=mean(100*value), median = median(100*value), maximum = max(100*value)) %>% mutate(minimum = human_readable_croncher(minimum), average=human_readable_croncher(average), median = human_readable_croncher(median), maximum = human_readable_croncher(maximum)) %>%  kable(caption="Percentage of Reads Retained at Each Step",digits=1)
+
+```
+
+
+```{r echo=FALSE, include=FALSE}
+
+before_After.cov <- inner_join( vs_dm6.bwa %>%  filter(measure=='avg_depth' | measure == 'total_breadth') %>% select(-c(aligner)) %>% spread(measure, value), vs_dm6.bwaUniq %>%  filter(measure=='avg_depth' | measure == 'total_breadth') %>% select(-c(aligner)) %>% spread(measure, value), by='sample', suffix=c(".before",".after") ) %>%  mutate(depth_retention = avg_depth.after/avg_depth.before, breadth_retention=total_breadth.after/total_breadth.before)
+
+
+before_After.cov.gathered.meta <- inner_join(before_After.cov %>%  gather(avg_depth.before:breadth_retention, key="measure", value="value") , data_sets.df, by=c("sample"="name") ) 
+
+
+```
+
+Depth of coverage:
+
+```{r echo=FALSE}
+
+depth.process <- all_alignments  %>%  filter(measure=='avg_depth' )%>% spread(aligner, value) %>%  mutate(depth_retention = 100*bwaUniq/bwa) %>% rename( "before" = bwa,  "after" = bwaUniq)
+
+covstats.dpth <- depth.process %>% summarise(step="pre-filtration depth",minimum = min(before), average=mean(before), median = median(before), maximum = max(before))
+
+covstats.dpth <- rbind(covstats.dpth, depth.process %>% summarise(step="post-filtration depth",minimum = min(after), average=mean(after), median = median(after), maximum = max(after)))
+
+covstats.dpth <- rbind(covstats.dpth, depth.process  %>% summarise(step="depth retention percent",minimum = min(depth_retention), average=mean(depth_retention), median = median(depth_retention), maximum = max(depth_retention)))
+
+covstats.dpth %>% kable(caption="Depth of Coverage Statistics for Raw and Filtered Alignments", digits=1 )
+```
+
+```{r echo=FALSE}
+ggplot(depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))) ) +geom_line(aes(group=sample, x=measure,y=value))+ geom_point(aes(group=sample, x=measure,y=value, color=sample)) +  labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Reads Per BP, Genome-Wide" )
+
+
+```
+
+Breadth of coverage:
+
+```{r echo=FALSE, include=FALSE}
+breadth.process <- all_alignments %>%  filter(measure=='total_breadth' ) %>% spread(aligner, value) %>%  mutate(breadth_retention = 100*bwaUniq/bwa) %>% rename( "before" = bwa, "after" = bwaUniq)
+
+covstats.brdth <- breadth.process %>% summarise(step="pre-filtration breadth",minimum = 100*min(before), average=100*mean(before), median = 100*median(before), maximum = 100*max(before))
+
+covstats.brdth <- rbind(covstats.brdth, breadth.process %>% summarise(step="post-filtration breadth",minimum = 100*min(after), average=100*mean(after), median = 100*median(after), maximum = 100*max(after)))
+
+covstats.brdth <- rbind(covstats.brdth, breadth.process  %>% summarise(step="breadth retention percent",minimum = min(breadth_retention), average=mean(breadth_retention), median = median(breadth_retention), maximum = max(breadth_retention)))
+
+covstats.brdth %>% kable(caption="Breadth of Coverage Statistics for Raw and Filtered Alignments", digits=1 )
+
+```
+
+
+```{r echo=FALSE, include=FALSE}
+ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) ) + geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_line(aes(group=sample, x=measure,y=value)) + labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Percentage of Reference Genome Mapped To" )
+
+```
+
+
+
+Will run the VCF caller on both BWA and BWA-Uniq; reporting will be reworked since we're interested in indels. 
 
 

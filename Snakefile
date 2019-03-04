@@ -2,7 +2,7 @@ configfile: 'config.yaml'
 
 
 
-#module load python/3.5.1 samtools bedtools bwa r/3.5.0 rstudio/1.1.453
+#module load python/3.5.1 samtools bedtools bwa r/3.5.0 rstudio/1.1.453 vcftools freebayes
 #PATH=$PATH:/nas/longleaf/home/csoeder/modules/vcflib/bin:/nas/longleaf/home/csoeder/modules/parallel/bin
 
 
@@ -227,11 +227,40 @@ rule demand_BAM_analytics:
 
 
 
+rule joint_vcf_caller_parallel:
+	input:
+		bams_in = lambda wildcards: expand("mapped_reads/{sample}.vs_{ref_genome}.{aligner}.sort.bam", sample=sample_by_name.keys(), ref_genome=wildcards.ref_genome, aligner=wildcards.aligner),
+		windows_in = "utils/{ref_genome}_w100000_s100000.windows.bed"
+	output:
+		vcf_out = "variants/all_samples.vs_{ref_genome}.{aligner}.vcf"
+	params:
+		freebayes="--standard-filters",
+		runmem_gb=32,
+		runtime="64:00:00",
+		cores=24,
+	message:
+		"Jointly calling variants from all samples mapped to \ {wildcards.ref_genome} \ with \ {wildcards.aligner} \ "
+	run:
+		ref_genome_file=ref_genome_by_name[wildcards.ref_genome]['path']
+		shell("""cat {input.windows_in}| awk '{{print$1":"$2"-"$3}}' > {input.windows_in}.rfmt""")
+		shell("scripts/freebayes-parallel {input.windows_in}.rfmt {params.cores} {params.freebayes} -f {ref_genome_file} {input.bams_in} | vcftools --remove-indels --vcf - --recode --recode-INFO-all --stdout  > {output.vcf_out} ")
+
+
+
+
+
+
+
+
+
+
+
+
 rule write_report:
 	input:
 		reference_genome_summary = ["meta/reference_genomes.summary"],
 		sequenced_reads_summary=["meta/sequenced_reads.dat"],
-		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa',]),
+		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa','bwaUniq']),
 	output:
 		pdf_out="thingy.pdf"
 	params:
