@@ -299,7 +299,7 @@ rule joint_vcf_caller_parallel:
 
 rule summon_VCF_analytics_base:
 	input:
-		bam_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary", prefix=wildcards.prefix, ref_genome=["droSim1","droSec1"], aligner="bwaUniq")
+		vcf_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary", prefix=wildcards.prefix, ref_genome="dm6", aligner=["bwa","bwaUniq"])
 	output:
 		full_report = "meta/{prefix}.calledVariants.{aligner}.summary"
 	params:
@@ -311,7 +311,7 @@ rule summon_VCF_analytics_base:
 	shell:
 		"""
 		prefix={wildcards.prefix}
-		cat {input.bam_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
+		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
 		"""
 
 
