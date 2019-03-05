@@ -268,7 +268,15 @@ ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(b
 ```
 
 
-
 Will run the VCF caller on both BWA and BWA-Uniq; reporting will be reworked since we're interested in indels. 
+
+## 5 March 2019
+
+Doing things a little differently, calling variants from both BWA and BWA-Uniq, then compare the two. (whereas before we used reference genome as a variable)
+
+
+
+
+
 
 

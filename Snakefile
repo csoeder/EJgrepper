@@ -260,38 +260,40 @@ rule joint_vcf_caller_parallel:
 
 
 
- rule vcf_reporter:
- 	input:
- 		vcf_in = "variants/{prefix}.vs_{ref_genome}.{aligner}.vcf"
- 	output:
- 		report_out = "meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary",
+rule vcf_reporter:
+	input:
+		vcf_in = "variants/{prefix}.vs_{ref_genome}.{aligner}.vcf"
+	output:
+		report_out = "meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary",
 # 		frq_out = "meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary.frq"
- 	params:
- 		runmem_gb=8,
- 		runtime="4:00:00",
- 		cores=4,
+	params:
+		runmem_gb=8,
+		runtime="4:00:00",
+		cores=4,
 	message:
-		"Collecting metadata for the {wildcards.aligner} alignment of {wildcards.sample} to {wildcards.ref_genome}.... "
- 	shell:
- 		"""
+		"Collecting metadata for the {wildcards.aligner} alignment of {wildcards.prefix} to {wildcards.ref_genome}.... "
+	shell:
+		"""
+		mkdir -p meta/VCFs/
+
 		vcftools --remove-indels --vcf {input.vcf_in} --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 1 | sort | uniq -c > {output.report_out}.snpsPerContig.tmp
-		cat {output.report_out}.snpsPerContig.tmp | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' | cat {output.report_out}.snpsPerContig.tmp - > {output.report_out}.snpsPerContig	
- 		rm {output.report_out}.snpsPerContig.tmp
+		cat {output.report_out}.snpsPerContig.tmp | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' | cat {output.report_out}.snpsPerContig.tmp - > {output.report_out}.snpsPerContig
+		rm {output.report_out}.snpsPerContig.tmp
 
 		vcftools --keep-only-indels --vcf {input.vcf_in} --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 1 | sort | uniq -c > {output.report_out}.indelsPerContig.tmp
 		cat {output.report_out}.indelsPerContig.tmp | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' | cat {output.report_out}.indelsPerContig.tmp - > {output.report_out}.indelsPerContig	
- 		rm {output.report_out}.indelsPerContig.tmp
+		rm {output.report_out}.indelsPerContig.tmp
 
- 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --freq 
- 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --counts
- 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-indv
- 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-site
- 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --singletons
+		vcftools  --vcf {input.vcf_in} --out {output.report_out} --freq 
+		vcftools  --vcf {input.vcf_in} --out {output.report_out} --counts
+		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-indv
+		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-site
+		vcftools  --vcf {input.vcf_in} --out {output.report_out} --singletons
 
- 		tail -n 1 {output.report_out}.snpsPerContig | awk '{{print "total_snp_count\t"$1}}'  > {output.report_out}
- 		tail -n 1 {output.report_out}.indelsPerContig | awk '{{print "total_indel_count\t"$1}}'  >> {output.report_out}
+		tail -n 1 {output.report_out}.snpsPerContig | awk '{{print "total_snp_count\t"$1}}'  > {output.report_out}
+		tail -n 1 {output.report_out}.indelsPerContig | awk '{{print "total_indel_count\t"$1}}'  >> {output.report_out}
 
- 		"""
+		"""
 
 # 	#cat  all_samples.vs_droSec1.bwaUniq.summary.frq.count| cut -f 3 | tail -n +2 | sort | uniq -c
 # 	#####	bi, tri, and quadralelic counts ^^ 
@@ -301,7 +303,7 @@ rule summon_VCF_analytics_base:
 	input:
 		vcf_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary", prefix=wildcards.prefix, ref_genome="dm6", aligner=["bwa","bwaUniq"])
 	output:
-		full_report = "meta/{prefix}.calledVariants.{aligner}.summary"
+		full_report = "meta/{prefix}.vs_{ref_genome}.calledVariants.summary"
 	params:
 		runmem_gb=1,
 		runtime="1:00",
@@ -311,7 +313,8 @@ rule summon_VCF_analytics_base:
 	shell:
 		"""
 		prefix={wildcards.prefix}
-		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
+		allen={wildcards.aligner}
+		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t'$allen'\t/g'> {output.full_report}
 		"""
 
 
