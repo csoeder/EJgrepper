@@ -259,53 +259,60 @@ rule joint_vcf_caller_parallel:
 		shell("scripts/freebayes-parallel {input.windows_in}.rfmt {params.cores} {params.freebayes} -f {ref_genome_file} {input.bams_in} | vcftools --vcf - --recode --recode-INFO-all --stdout  > {output.vcf_out} ")
 
 
-# rule vcf_reporter:
-# 	input:
-# 		vcf_in = "variants/{prefix}.vs_{ref_genome}.{aligner}.vcf"
-# 	output:
-# 		report_out = "meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary",
+
+ rule vcf_reporter:
+ 	input:
+ 		vcf_in = "variants/{prefix}.vs_{ref_genome}.{aligner}.vcf"
+ 	output:
+ 		report_out = "meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary",
 # 		frq_out = "meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary.frq"
-# 	params:
-# 		runmem_gb=8,
-# 		runtime="4:00:00",
-# 		cores=4,
-# #	message:
-# #		"Collecting metadata for the {wildcards.aligner} alignment of {wildcards.sample} to {wildcards.ref_genome}.... "
-# 	shell:
-# 		"""
-# 		cat {input.vcf_in}  | grep -v "#" | cut -f 1 | sort | uniq -c > {output.report_out}.snpsPerContig.tmp
-# 		cat {output.report_out}.snpsPerContig.tmp | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' | cat {output.report_out}.snpsPerContig.tmp - > {output.report_out}.snpsPerContig
-# 		rm {output.report_out}.snpsPerContig.tmp
-# 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --freq 
-# 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --counts
-# 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-indv
-# 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-site
-# 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --singletons
+ 	params:
+ 		runmem_gb=8,
+ 		runtime="4:00:00",
+ 		cores=4,
+	message:
+		"Collecting metadata for the {wildcards.aligner} alignment of {wildcards.sample} to {wildcards.ref_genome}.... "
+ 	shell:
+ 		"""
+		vcftools --remove-indels --vcf {input.vcf_in} --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 1 | sort | uniq -c > {output.report_out}.snpsPerContig.tmp
+		cat {output.report_out}.snpsPerContig.tmp | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' | cat {output.report_out}.snpsPerContig.tmp - > {output.report_out}.snpsPerContig	
+ 		rm {output.report_out}.snpsPerContig.tmp
 
-# 		ref_genome={wildcards.ref_genome}
+		vcftools --keep-only-indels --vcf {input.vcf_in} --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 1 | sort | uniq -c > {output.report_out}.indelsPerContig.tmp
+		cat {output.report_out}.indelsPerContig.tmp | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' | cat {output.report_out}.indelsPerContig.tmp - > {output.report_out}.indelsPerContig	
+ 		rm {output.report_out}.indelsPerContig.tmp
 
-# 		tail -n 1 {output.report_out}.snpsPerContig | awk '{{print "total_snp_count\t"$1}}' | sed -e 's/^/'$ref_genome'\t/g' > {output.report_out}
-# 		"""
+ 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --freq 
+ 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --counts
+ 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-indv
+ 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-site
+ 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --singletons
+
+ 		tail -n 1 {output.report_out}.snpsPerContig | awk '{{print "total_snp_count\t"$1}}'  > {output.report_out}
+ 		tail -n 1 {output.report_out}.indelsPerContig | awk '{{print "total_indel_count\t"$1}}'  >> {output.report_out}
+
+ 		"""
+
 # 	#cat  all_samples.vs_droSec1.bwaUniq.summary.frq.count| cut -f 3 | tail -n +2 | sort | uniq -c
 # 	#####	bi, tri, and quadralelic counts ^^ 
 # 	#replace some of this with vcftools::vcf-stats ?
 
-# rule summon_VCF_analytics_base:
-# 	input:
-# 		bam_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary", prefix=wildcards.prefix, ref_genome=["droSim1","droSec1"], aligner="bwaUniq")
-# 	output:
-# 		full_report = "meta/{prefix}.calledVariants.{aligner}.summary"
-# 	params:
-# 		runmem_gb=1,
-# 		runtime="1:00",
-# 		cores=1,
-# 	message:
-# 		"collecting all alignment metadata.... "
-# 	shell:
-# 		"""
-# 		prefix={wildcards.prefix}
-# 		cat {input.bam_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
-# 		"""
+rule summon_VCF_analytics_base:
+	input:
+		bam_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary", prefix=wildcards.prefix, ref_genome=["droSim1","droSec1"], aligner="bwaUniq")
+	output:
+		full_report = "meta/{prefix}.calledVariants.{aligner}.summary"
+	params:
+		runmem_gb=1,
+		runtime="1:00",
+		cores=1,
+	message:
+		"collecting all alignment metadata.... "
+	shell:
+		"""
+		prefix={wildcards.prefix}
+		cat {input.bam_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
+		"""
 
 
 
