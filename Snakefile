@@ -290,8 +290,10 @@ rule vcf_reporter:
 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --missing-site
 		vcftools  --vcf {input.vcf_in} --out {output.report_out} --singletons
 
-		tail -n 1 {output.report_out}.snpsPerContig | awk '{{print "total_snp_count\t"$1}}'  > {output.report_out}
-		tail -n 1 {output.report_out}.indelsPerContig | awk '{{print "total_indel_count\t"$1}}'  >> {output.report_out}
+		allen={wildcards.aligner}
+
+		tail -n 1 {output.report_out}.snpsPerContig | awk '{{print "total_snp_count\t"$1}}' | sed -e 's/^/'$allen'\t/g' > {output.report_out}
+		tail -n 1 {output.report_out}.indelsPerContig | awk '{{print "total_indel_count\t"$1}}' | sed -e 's/^/'$allen'\t/g'  >> {output.report_out}
 
 		"""
 
@@ -313,8 +315,7 @@ rule summon_VCF_analytics_base:
 	shell:
 		"""
 		prefix={wildcards.prefix}
-		allen={wildcards.aligner}
-		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t'$allen'\t/g'> {output.full_report}
+		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
 		"""
 
 

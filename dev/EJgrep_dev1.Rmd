@@ -275,6 +275,80 @@ Will run the VCF caller on both BWA and BWA-Uniq; reporting will be reworked sin
 Doing things a little differently, calling variants from both BWA and BWA-Uniq, then compare the two. (whereas before we used reference genome as a variable)
 
 
+## 6 March 2019
+
+
+```{r echo=FALSE, include=FALSE}
+all_samples.vs_dm6.calledVariants.summary <- read_delim("meta/all_samples.vs_dm6.calledVariants.summary", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+names(all_samples.vs_dm6.calledVariants.summary) <- c("subset", "aligner", "variant_type", "count")
+all_samples.vs_dm6.calledVariants.summary$aligner <- as.factor(all_samples.vs_dm6.calledVariants.summary$aligner)
+all_samples.vs_dm6.calledVariants.summary$variant_type <- as.factor(all_samples.vs_dm6.calledVariants.summary$variant_type)
+
+reference_genomes_summaryStats.sprud <- refGenomes_summary_df %>%  spread(measure,value) %>%  select(c(-number_contigs)) 
+
+all_samples.vs_dm6.calledVariants.summary.sprud <- all_samples.vs_dm6.calledVariants.summary %>% spread(variant_type, count) %>%  transmute( aligner=aligner, INDELs = total_indel_count, SNPs = total_snp_count) 
+
+all_samples.vs_dm6.calledVariants.summary.sprud$total_bp <- reference_genomes_summaryStats.sprud$number_bases
+
+all_samples.vs_dm6.calledVariants.summary.sprud %>%  transmute( aligner=aligner, INDELs = INDELs, INDEL_per_kb=1000*INDELs/total_bp, SNPs = SNPs, SNP_per_kb=1000*SNPs/total_bp) %>% mutate(INDELs=human_readable_croncher(SNPs), INDELs=human_readable_croncher(SNPs) ) %>%  kable(caption="Breadth of Coverage Statistics for Raw and Filtered Alignments", digits=1 )
+```
+
+
+
+```{r echo=FALSE, include=FALSE}
+all_samples.calledVariants.bwa.lmiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwa.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+all_samples.calledVariants.bwa.lmiss$aligner <- "bwa"
+
+all_samples.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+all_samples.calledVariants.bwaUniq.lmiss$aligner <- "bwaUniq"
+
+
+nsamps <- nrow(data_sets.df %>%  filter(subgroups == 'all') )
+
+
+all_samples.calledVariants.lmiss <- rbind(all_samples.calledVariants.bwa.lmiss, all_samples.calledVariants.bwaUniq.lmiss) %>% select(c(aligner, N_MISS)) %>%  mutate(aligner=as.factor(aligner), N_PRES=nsamps-N_MISS)
+
+```
+
+```{r echo=FALSE}
+ggplot(all_samples.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=aligner, color=aligner), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of SNPs by Number of Samples Called At Site", y="Number of Sites")
+```
+
+
+
+
+
+```{r echo=FALSE, include=FALSE}
+all_samples.bwa.imiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwa.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+all_samples.bwa.imiss$aligner <- "bwa"
+
+all_samples.bwaUniq.imiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+all_samples.bwaUniq.imiss$aligner <- "bwaUniq"
+
+all_samples.imiss  <- rbind(all_samples.bwa.imiss, all_samples.bwaUniq.imiss)  %>%  mutate(name=as.factor(INDV), aligner=as.factor(aligner), N_PRES=N_DATA-N_MISS) %>% select(c( name, N_MISS, N_PRES, F_MISS,aligner))
+
+```
+
+```{r echo=FALSE}
+
+
+all_samples.imiss.augmented <- inner_join(all_samples.imiss, all_alignments %>%  filter(measure=='total_breadth') %>% select(c(sample,aligner,value)) %>% rename(breadth=value) %>% mutate(breadth = 100*breadth), by=c("name"="sample", "aligner"="aligner"))
+
+all_samples.imiss.augmented <-inner_join(all_samples.imiss.augmented, all_alignments %>%  filter(measure=='avg_depth') %>% select(c(sample,aligner,value)) %>% rename(depth=value), by=c("name"="sample", "aligner"="aligner"))
+
+all_samples.imiss.augmented <- all_samples.imiss.augmented %>%  gather(breadth:depth, key="measure", value="value")
+
+```
+
+```{r echo=FALSE}
+ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=aligner, shape=aligner)) + facet_grid(.~measure, scales="free_x")+ theme_clear() + labs(x="", y="Fraction of SNPs Callable", title="Jointly Called SNPs Callable per Sample, by Breadth and Depth of Coverage")
+
+
+
+# + geom_text(data=subset(all_samples.imiss.augmented, 1-F_MISS < 0.75 & measure=="breadth"),aes(value,1-F_MISS,label=name))
+```
+
+
 
 
 
