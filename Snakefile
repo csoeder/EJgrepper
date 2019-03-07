@@ -318,6 +318,46 @@ rule summon_VCF_analytics_base:
 		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
 		"""
 
+rule contrast_VCFs:
+	input:
+		vcf1 = "variants/{prefix1}.vs_{ref_genome}.{aligner1}.vcf",
+		vcf2 = "variants/{prefix2}.vs_{ref_genome}.{aligner2}.vcf",
+	output:
+		site_diff= "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.diff.sites_in_files",
+		site_disc= "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.diff.sites",
+		site_disc1 = "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.diff.sites.1",
+		site_disc2 = "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.diff.sites.2",
+		site_discB = "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.diff.sites.B",
+		indiv_disc = "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.disc",
+		indiv_disc_count = "meta/VCFs/{prefix1}__{aligner1}.contrast.{prefix2}__{aligner2}.{ref_genome}.disc.count",
+	params:
+		runmem_gb=8,
+		runtime="4:00:00",
+		cores=4,
+		good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4 --chr chrM --chr chrX --chr chrY",
+	message:
+		"potatoes for breakfast.... "
+	shell:
+		"""
+		vcftools --vcf {input.vcf1} --diff {input.vcf2} --diff-site --out meta/VCFs/{wildcards.prefix1}__{wildcards.aligner1}.contrast.{wildcards.prefix2}__{wildcards.aligner2}.{wildcards.ref_genome} {params.good_chroms}
+
+		vcftools --vcf {input.vcf1} --diff {input.vcf2} --diff-site-discordance --out meta/VCFs/{wildcards.prefix1}__{wildcards.aligner1}.contrast.{wildcards.prefix2}__{wildcards.aligner2}.{wildcards.ref_genome} {params.good_chroms}
+
+		tail -n +2 {output.site_disc}| awk '{{if($3 == 1)print;}}' | cut -f 1 | uniq -c > {output.site_disc1}
+		tail -n +2 {output.site_disc}| awk '{{if($3 == 1)print;}}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >>{output.site_disc1}
+
+		tail -n +2 {output.site_disc}| awk '{{if($3 == 2)print;}}' | cut -f 1 | uniq -c > {output.site_disc2}
+		tail -n +2 {output.site_disc}| awk '{{if($3 == 2)print;}}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >>{output.site_disc2}
+
+		tail -n +2 {output.site_disc}| awk '{{if($3 == "B")print;}}' | cut -f 1 | uniq -c > {output.site_discB}
+		tail -n +2 {output.site_disc}| awk '{{if($3 == "B")print;}}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >>{output.site_discB}
+
+		tail -n +2 {output.site_disc} | awk '{{if($3 == "B")print;}}' | awk '{{if($6>0)print;}}' > {output.indiv_disc}
+
+		cat {output.indiv_disc}| cut -f 1 | uniq -c > {output.indiv_disc_count}
+		cat {output.indiv_disc}| cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> {output.indiv_disc_count}
+
+		"""	
 
 
 
@@ -327,6 +367,8 @@ rule write_report:
 		reference_genome_summary = ["meta/reference_genomes.summary"],
 		sequenced_reads_summary=["meta/sequenced_reads.dat"],
 		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa','bwaUniq']),
+		VCF_reports = ["meta/all_samples.vs_dm6.calledVariants.summary"],
+		VCF_contrasts = ["meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites_in_files", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.1", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.2", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc.count",],
 	output:
 		pdf_out="thingy.pdf"
 	params:

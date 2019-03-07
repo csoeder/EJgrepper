@@ -350,6 +350,132 @@ ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color
 
 
 
+## 7 March 2019
+
+Might also be good to do a comparison between the two VCFs using vcftools --diff. 
+
+```{bash eval=FALSE, echo=FALSE}
+vcftools --vcf variants/all_samples.vs_dm6.bwa.vcf --diff variants/all_samples.vs_dm6.bwaUniq.vcf --diff-site --out comparisonTest 
+```
+
+This complains: 
+Error: Cannot determine chromosomal ordering of files, both files must contain the same chromosomes to use the diff functions.
+Found chrUn_DS483679v1 in file 1 and chrUn_DS483680v1 in file 2.
+
+Let's try using the --chr command to limit to main-line chromosomes....
+
+
+
+```{bash eval=FALSE, echo=FALSE}
+vcftools --vcf variants/all_samples.vs_dm6.bwa.vcf --diff variants/all_samples.vs_dm6.bwaUniq.vcf --diff-site --out comparisonTest --chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4 --chr chrM --chr chrX --chr chrY
+```
+
+
+There is also the --diff-site-discordance flag:
+
+"The MATCHING_ALLELES column tells you if the alleles called in file match exactly at that site (i.e the REF and ALT columns are identical in the two files).
+The N_COMMON_CALLED column tells you the number of individuals at that site that were called in both files (i.e. the individuals in the intersection of the two datasets that don't have missing data ./. ).
+The N_DISCORD column tells you the number of individuals in the intersection that are discordant at that site." -Adam Auton
+
+https://sourceforge.net/p/vcftools/mailman/message/27128665/
+
+
+also maybe use  --diff-indv-discordance then compare individual discordance to e.g. breadth reduction upon BAM filtration
+
+
+
+
+Locii variable in A only:
+```{bash eval=FALSE, echo=FALSE}
+cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 1)print;}' | cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.Aonly.count
+
+cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 1)print;}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> dev/meta/VCFs/comparisonTest.diff.sites.Aonly.count
+```
+
+in B only:
+```{bash eval=FALSE, echo=FALSE}
+cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 2)print;}' | cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.Bonly.count
+
+cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 2)print;}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> dev/meta/VCFs/comparisonTest.diff.sites.Bonly.count
+
+```
+
+
+Locii variable in both A and B:
+```{bash eval=FALSE, echo=FALSE}
+cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == "B")print;}' | cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.covary.count
+
+cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == "B")print;}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> dev/meta/VCFs/comparisonTest.diff.sites.covary.count
+```
+
+```{r echo=FALSE}
+comparisonTest_diff_both <- read_table2("meta/VCFs/comparisonTest.diff.sites.covary.count", col_names = FALSE)
+names(comparisonTest_diff_both) <- c("count","chrom")
+comparisonTest_diff_both$vcf <- as.factor("both")
+
+comparisonTest_diff_A <- read_table2("meta/VCFs/comparisonTest.diff.sites.Aonly.count", col_names = FALSE)
+names(comparisonTest_diff_A) <- c("count","chrom")
+comparisonTest_diff_A$vcf <- as.factor("A")
+
+comparisonTest_diff_B <- read_table2("meta/VCFs/comparisonTest.diff.sites.Bonly.count", col_names = FALSE)
+names(comparisonTest_diff_B) <- c("count","chrom")
+comparisonTest_diff_B$vcf <- as.factor("B")
+
+comparisonTest_diff <- rbind(comparisonTest_diff_both, comparisonTest_diff_A, comparisonTest_diff_B)
+```
+
+
+https://rstudio-pubs-static.s3.amazonaws.com/13301_6641d73cfac741a59c0a851feb99e98b.html
+
+```{r echo=FALSE}
+library("VennDiagram")
+
+grid.newpage()
+
+draw.pairwise.venn(area1=sum(comparisonTest_diff %>% filter(vcf=='A' | vcf == "both") %>% filter(chrom=="total") %>%  select(count)), area2=sum(comparisonTest_diff %>% filter(vcf=='B' | vcf == "both") %>% filter(chrom=="total") %>%  select(count)), cross.area =sum(comparisonTest_diff %>% filter(vcf == "both") %>% filter(chrom=="total") %>%  select(count)), category=c('tomato', 'potato'), fill = c("blue", "red"), alpha = rep(0.5, 2))
+
+```
+
+of the ones in the intersection: 
+
+
+Locii variable in A and B but with at least one discordant individual:
+```{bash eval=FALSE, echo=FALSE}
+cat dev/meta/VCFs/comparisonTest.diff.sites |  tail -n +2 | awk '{if($3 == "B")print;}' | awk '{if($6>0)print;}' > dev/meta/VCFs/comparisonTest.diff.sites.discord
+
+cat dev/meta/VCFs/comparisonTest.diff.sites.discord| cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.discord.count
+
+cat dev/meta/VCFs/comparisonTest.diff.sites.discord| cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >>dev/meta/VCFs/comparisonTest.diff.sites.discord.count
+```
+
+
+```{r echo=FALSE}
+comparisonTest_diff_discord.count <- read_table2("meta/VCFs/comparisonTest.diff.sites.discord.count", col_names = FALSE)
+names(comparisonTest_diff_discord.count) <- c("count","chrom")
+comparisonTest_diff_discord.count$vcf <- as.factor("discord")
+
+```
+
+a total of $`r comparisonTest_diff_discord.count %>% filter(chrom=="total") %>%  select(count) `$ sites with at least one discordant individual.
+
+```{r echo=FALSE}
+
+comparisonTest_diff_discord <- read_delim("meta/VCFs/comparisonTest.diff.sites.discord", "\t", escape_double = FALSE, col_names = FALSE,trim_ws = TRUE)
+names(comparisonTest_diff_discord) <- c("chrom", "pos", "vcf", "matching", "called", "discord", "disc_rate")
+
+
+ggplot(comparisonTest_diff_discord) + geom_histogram(aes(x=disc_rate))
+
+```
+
+
+OK so that's some VCF comparison infrastructure; how to implement? Here we are comparing VCFs from two different alignment/calling strategies but ultimately we'll probably want to compare subgroups of all_samples. Do I use the same rule for both? It's possible that down the line when an alignment/calling strategy is decided upon, I won't want something so general...
+
+
+
+
+
+
 
 
 
