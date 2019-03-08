@@ -14,12 +14,14 @@ bibliography: references.bib
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #knitr::opts_knit$set(root.dir = '/Users/csoeder/Research/PSIseq/EJgrepper/')
-knitr::opts_knit$set(root.dir=peaDubDee)
+knitr::opts_knit$set(root.dir = '/proj/cdjones_lab/csoeder/EJgrepper/')
+#knitr::opts_knit$set(root.dir=peaDubDee)
 
 library("yaml")
 library("readr")
 library("knitr")
 library("ggbio")
+library("VennDiagram")
 
 library("tidyverse")
 
@@ -194,14 +196,16 @@ all_alignments <- rbind(vs_dm6.bwa, vs_dm6.bwaUniq)
 
 
 
-The fraction of reads retained at each filtration step:
 ```{r echo=FALSE}
-
 readcount_process <- all_alignments %>%  filter( (measure=='total_read_count' & aligner=="bwa") | measure == 'total_mapped_count' ) %>% mutate(measure=ifelse(aligner=="bwaUniq", "filtered_mapped_count", ifelse(measure=="total_read_count","total_read_count","total_mapped_count"))) 
 readcount_process$measure <- factor(readcount_process$measure, levels = c('total_read_count','total_mapped_count','filtered_mapped_count'))
+```
+
+The fraction of reads retained at each filtration step:
 
 
-ggplot(readcount_process) + geom_line(aes(group=sample, x=measure,y=value)) + geom_point(aes(x=measure, y=value, group=sample,color=sample))  + labs(title="Read Counts by Processing Step: Unmapped, Mapped, Filtered", x="", y="Number Reads" ) + scale_y_log10()  + theme_clear() + theme(axis.text.x = element_text(angle = -45, hjust = 0)) 
+```{r echo=FALSE}
+ggplot(readcount_process) + geom_line(aes(group=sample, x=measure,y=value)) + geom_point(aes(x=measure, y=value, group=sample,color=sample))  + labs(title="Read Counts by Processing Step: Unmapped, Mapped, Filtered", x="", y="Number Reads" ) + theme_clear() + theme(axis.text.x = element_text(angle = -45, hjust = 0), legend.position='none' ) 
 
 ```
 
@@ -256,12 +260,10 @@ covstats.dpth %>% kable(caption="Depth of Coverage Statistics for Raw and Filter
 
 
 ```{r echo=FALSE}
-ggplot(depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))) ) +geom_line(aes(group=sample, x=measure,y=value))+ geom_point(aes(group=sample, x=measure,y=value, color=sample)) +  labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Reads Per BP, Genome-Wide" )
-
+ggplot(depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))))  +geom_line(aes(group=sample, x=measure,y=value))+ geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_text(data=depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))) %>% filter(value < 25), aes(as.factor("after"),value,label=sample)) + theme_clear()  + theme( legend.position='none' ) +  labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Reads Per BP, Genome-Wide" ) 
 
 ```
 
-Breadth of coverage, ie, the percentage of the genome covered by at least one read:
 
 ```{r echo=FALSE, include=FALSE}
 breadth.process <- all_alignments %>%  filter(measure=='total_breadth' ) %>% spread(aligner, value) %>%  mutate(breadth_retention = 100*bwaUniq/bwa) %>% rename( "before" = bwa, "after" = bwaUniq)
@@ -277,8 +279,10 @@ covstats.brdth %>% kable(caption="Breadth of Coverage Statistics for Raw and Fil
 ```
 
 
-```{r echo=FALSE, include=FALSE}
-ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) ) + geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_line(aes(group=sample, x=measure,y=value)) + labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Percentage of Reference Genome Mapped To" )
+Breadth of coverage, ie, the percentage of the genome covered by at least one read:
+
+```{r include=FALSE}
+ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) ) + geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_line(aes(group=sample, x=measure,y=value)) + geom_text(data=breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) %>% filter(value < 87), aes(as.factor("after"),value,label=sample)) + theme_clear()  + theme( legend.position='none' ) + labs(title="Breadth Of Coverage for Raw and Filtered Alignments", x="", y="Percentage of Reference Genome Mapped To" )
 
 ```
 
@@ -329,8 +333,10 @@ all_samples.calledVariants.lmiss <- rbind(all_samples.calledVariants.bwa.lmiss, 
 
 ```
 
+
+
 ```{r echo=FALSE}
-ggplot(all_samples.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=aligner, color=aligner), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of SNPs by Number of Samples Called At Site", y="Number of Sites")
+ggplot(all_samples.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=aligner, color=aligner), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
 ```
 
 
@@ -350,7 +356,7 @@ all_samples.imiss  <- rbind(all_samples.bwa.imiss, all_samples.bwaUniq.imiss)  %
 
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, include=FALSE}
 
 
 all_samples.imiss.augmented <- inner_join(all_samples.imiss, all_alignments %>%  filter(measure=='total_breadth') %>% select(c(sample,aligner,value)) %>% rename(breadth=value) %>% mutate(breadth = 100*breadth), by=c("name"="sample", "aligner"="aligner"))
@@ -362,15 +368,76 @@ all_samples.imiss.augmented <- all_samples.imiss.augmented %>%  gather(breadth:d
 ```
 
 ```{r echo=FALSE}
-ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=aligner, shape=aligner)) + facet_grid(.~measure, scales="free_x")+ theme_clear() + labs(x="", y="Fraction of SNPs Callable", title="Jointly Called SNPs Callable per Sample, by Breadth and Depth of Coverage")
+ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=aligner, shape=aligner)) + facet_grid(.~measure, scales="free_x") + theme_clear() + labs(x="", y="Fraction of Sites Callable", title="Jointly Called Variants Callable per Sample,\n by Breadth and Depth of Coverage")
 
 ```
 
 ### VCF comparison & contrast
 
 
+The two variant-calling methods are compared and contrasted over the main-line chromosomes ( chr2L, chr2R, chr3L, chr3R, chr4, chrM, chrX, chrY). 
+ 
+
+```{r echo=FALSE, include = FALSE}
+vcfCompare_diff_both <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.B", col_names = FALSE)
+names(vcfCompare_diff_both) <- c("count","chrom")
+vcfCompare_diff_both$vcf <- as.factor("both")
+
+vcfCompare_diff_bwa <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.1", col_names = FALSE)
+names(vcfCompare_diff_bwa) <- c("count","chrom")
+vcfCompare_diff_bwa$vcf <- as.factor("bwa")
 
 
+vcfCompare_diff_bwaUniq <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.2", col_names = FALSE)
+names(vcfCompare_diff_bwaUniq) <- c("count","chrom")
+vcfCompare_diff_bwaUniq$vcf <- as.factor("bwaUniq")
+
+vcfCompare_diff <- rbind(vcfCompare_diff_both, vcfCompare_diff_bwa, vcfCompare_diff_bwaUniq)
+
+```
+
+Of the  $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total") %>%  select(count) %>% sum() ) `$ total variant sites called between the two VCFs, most ($`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf=="both") %>%  select(count) %>% sum() ) `$) were called in both files; $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf!="both") %>%  select(count) %>% sum() ) `$ were unique to one of them:
+
+```{r echo=FALSE}
+
+grid.newpage()
+
+draw.pairwise.venn(area1=sum(vcfCompare_diff %>% filter(vcf=='bwa' | vcf == "both") %>% filter(chrom=="total") %>%  select(count)), area2=sum(vcfCompare_diff %>% filter(vcf=='bwaUniq' | vcf == "both") %>% filter(chrom=="total") %>%  select(count)), cross.area =sum(vcfCompare_diff %>% filter(vcf == "both") %>% filter(chrom=="total") %>%  select(count)), category=c('bwa', 'bwaUniq'), fill = c("blue", "red"), alpha = rep(0.75, 2))
+
+```
+
+
+
+```{r echo=FALSE, include=FALSE}
+vcfCompare_diff_discord.count <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc.count", col_names = FALSE)
+names(vcfCompare_diff_discord.count) <- c("count","chrom")
+vcfCompare_diff_discord.count$vcf <- as.factor("discord")
+
+```
+
+Of the $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf=="both") %>%  select(count) %>% sum() ) `$ variable sites shared by the two VCF files,  $`r human_readable_croncher( vcfCompare_diff_discord.count %>% filter(chrom=="total" )  %>%  select(count) %>% sum()) `$ contained at least once sample which was called differently between the two VCF files. 
+
+
+
+
+```{r echo=FALSE, include=FALSE}
+
+vcfCompare_diff_discord <- read_delim("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc", "\t", escape_double = FALSE, col_names = FALSE,trim_ws = TRUE)
+names(vcfCompare_diff_discord) <- c("chrom", "pos", "vcf", "matching", "called", "discord", "disc_rate")
+```
+
+
+
+```{r echo=FALSE}
+ggplot(vcfCompare_diff_discord) + geom_histogram(aes(x=disc_rate)) + theme_clear() + labs(x="Fraction Discordant Samples", y="Number of Variable Sites", title="Histogram of Variable Site Count\nby Fraction of Discordant Samples")
+
+```
+
+
+Combining disjoint and discordant variable sites, there were a total $`r human_readable_croncher( vcfCompare_diff_discord.count %>% filter(chrom=="total" )  %>%  select(count) %>% sum() + vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf!="both") %>%  select(count) %>% sum() ) `$ out of $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total") %>%  select(count) %>% sum() ) `$  disagreements between the two calling methods. 
+
+
+# Results
 
 
 # Bibliography
