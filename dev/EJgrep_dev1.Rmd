@@ -3,6 +3,8 @@ title: "End Joining Signatures - dev"
 author: "Charlie Soeder"
 date: "2/15/2019"
 output: pdf_document
+bibliography: references.bib
+
 ---
 
 ```{r setup, include=FALSE}
@@ -156,6 +158,7 @@ ggplot(dupe_stats) + geom_histogram(aes(x=percent), bins=15) + labs(title="Dupli
 ## 27 February 2019
 
 Bioinformatics tips on INDEL calling & normalization with DSB background:
+
 https://genome.sph.umich.edu/w/images/b/b4/Variant_Calling_and_Filtering_for_INDELs.pdf
 
 ## 5 March 2019
@@ -354,7 +357,7 @@ ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color
 
 Might also be good to do a comparison between the two VCFs using vcftools --diff. 
 
-```{bash eval=FALSE, echo=FALSE}
+```{bash eval=FALSE }
 vcftools --vcf variants/all_samples.vs_dm6.bwa.vcf --diff variants/all_samples.vs_dm6.bwaUniq.vcf --diff-site --out comparisonTest 
 ```
 
@@ -366,7 +369,7 @@ Let's try using the --chr command to limit to main-line chromosomes....
 
 
 
-```{bash eval=FALSE, echo=FALSE}
+```{bash eval=FALSE}
 vcftools --vcf variants/all_samples.vs_dm6.bwa.vcf --diff variants/all_samples.vs_dm6.bwaUniq.vcf --diff-site --out comparisonTest --chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4 --chr chrM --chr chrX --chr chrY
 ```
 
@@ -386,14 +389,14 @@ also maybe use  --diff-indv-discordance then compare individual discordance to e
 
 
 Locii variable in A only:
-```{bash eval=FALSE, echo=FALSE}
+```{bash eval=FALSE}
 cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 1)print;}' | cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.Aonly.count
 
 cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 1)print;}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> dev/meta/VCFs/comparisonTest.diff.sites.Aonly.count
 ```
 
 in B only:
-```{bash eval=FALSE, echo=FALSE}
+```{bash eval=FALSE}
 cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 2)print;}' | cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.Bonly.count
 
 cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 2)print;}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> dev/meta/VCFs/comparisonTest.diff.sites.Bonly.count
@@ -402,7 +405,7 @@ cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == 2)prin
 
 
 Locii variable in both A and B:
-```{bash eval=FALSE, echo=FALSE}
+```{bash eval=FALSE}
 cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == "B")print;}' | cut -f 1 | uniq -c > dev/meta/VCFs/comparisonTest.diff.sites.covary.count
 
 cat dev/meta/VCFs/comparisonTest.diff.sites | tail -n +2 | awk '{if($3 == "B")print;}' | cut -f 1 | uniq -c | awk '{{sum+=$1}} END {{ print sum,"\ttotal"}}' >> dev/meta/VCFs/comparisonTest.diff.sites.covary.count
@@ -472,11 +475,63 @@ ggplot(comparisonTest_diff_discord) + geom_histogram(aes(x=disc_rate))
 OK so that's some VCF comparison infrastructure; how to implement? Here we are comparing VCFs from two different alignment/calling strategies but ultimately we'll probably want to compare subgroups of all_samples. Do I use the same rule for both? It's possible that down the line when an alignment/calling strategy is decided upon, I won't want something so general...
 
 
+## 8 March 2019
+
+Looking at INDELs  within the control subset...
+```{bash eval=FALSE}
+vcftools --vcf variants/all_samples.vs_dm6.bwaUniq.vcf --keep-only-indels --freq --out test
+vcftools --vcf variants/all_samples.vs_dm6.bwaUniq.vcf --keep-only-indels --counts --out test
+```
+
+hmmm, we're presumably looking for individual-specific alleles; there could potentially be more than one such allele at a given site! (these show up in the VCF as eg 0/2)
+
+The INDELs .... will they be het or hom??? Presumably Het, since the break repair only happens on one strand....
+
+Finding all the variants from the above count tallies with only one chromosome in the population carrying; awk + grep for more filtration.
+```{bash eval=FALSE}
+cat test.frq.count | grep -P ':1[$,\t]'
+```
 
 
+## 10 March 2019
+
+Background: Figure 1 of [@McVey2008] and https://en.wikipedia.org/wiki/Non-homologous_end_joining
+
+It looks like NHEJ and MMEJ are prone to forming heterozygous indels near the DSB site. (am i right that MMEJ at least will form flanking indels?)
+
+Are the DSBs random across the genome? What are the odds that the same site would be struck by DSB and repair error twice in the population (ie, 30 flies)? if it's very low, we need to look for indels which are heterozygous for an indel in one individual but homozygous in everyone else.
+
+One data subtelty here is that the called variants are vs the ref genome so the ancestral genotype is presumably the one with the higher (f~1.0 in approx isogenic pop) allele frequency. Thus a reversion to het dm6 reference (0/1) from a population of hom variants (1/1) would be a candidate site. Also, since a site which is different from the reference may later be altered via DSB repair (ie, in a 1/1 population a 1/2 genotype with low AF on 2 is a candidate.)
+
+figs to make:
+ * histogram of minor allele frequency for indel variants. Many will have a MinAF of 0 (ie, fixed differences); filter these? others will have a small minAF corresponding to e.g. 1 chromosome in the population.  
+
+if there is a flanking behavior this should be easy to pick out: do a histogram of intrachromsomal distance among variants and then to a freq_poly plot binned by genotype (ie, hom vs het). Look for heterozygotes which are neighbors. 
+
+From [@Miller2016]:
+"Drosophila oocytes experience ~11–17 DSBs per meiosis
+that are restricted to the euchromatin ... How the position
+of these DSBs is determined and their fate (whether they become
+COs or NCOs) is poorly understood." also discusses recombinational hotspots; evidence is against them??
+
+Table S2 for crossover sites identified in [@Miller2016]; Table S3 for noncrossover sites.
+
+From Danny Miller 11 Jan 2019:
+
+*First, I called SNPs using GATK. From this output I isolated novel deletions for both chromosome X and 2. I re-wrote this script tonight and re-ran it and found four likely novel deletions that I hadn't seen before:
+
+mcm5-12, chrX:12825436, GAAA deletion 
+mcm5-21, chr2R:12737873, A deletion 
+mcm5-22, chr2R:8597548, T deletion
+mcm5-24, chr2L:21664793, TATATA deletion
+*
+
+his main finding: 
+
+*I really expected to find lots of deletions suggesting repair of DSBs via NHEJ, but I didn't. This finding is consistent with the 95-ish single genomes I sequenced from homozygous c3g females where I also failed to find any deletions. *
+
+So, maybe another figure would be deletions vs. the major allele? eg, histogram of indel change in nucleotides. 
 
 
-
-
-
+## Bibliography
 

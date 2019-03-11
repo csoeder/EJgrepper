@@ -281,7 +281,7 @@ covstats.brdth %>% kable(caption="Breadth of Coverage Statistics for Raw and Fil
 
 Breadth of coverage, ie, the percentage of the genome covered by at least one read:
 
-```{r include=FALSE}
+```{r echo=FALSE}
 ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) ) + geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_line(aes(group=sample, x=measure,y=value)) + geom_text(data=breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) %>% filter(value < 87), aes(as.factor("after"),value,label=sample)) + theme_clear()  + theme( legend.position='none' ) + labs(title="Breadth Of Coverage for Raw and Filtered Alignments", x="", y="Percentage of Reference Genome Mapped To" )
 
 ```
