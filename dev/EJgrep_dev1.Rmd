@@ -520,17 +520,149 @@ From Danny Miller 11 Jan 2019:
 
 *First, I called SNPs using GATK. From this output I isolated novel deletions for both chromosome X and 2. I re-wrote this script tonight and re-ran it and found four likely novel deletions that I hadn't seen before:
 
-mcm5-12, chrX:12825436, GAAA deletion 
+mcm5-12, chrX:12825436, GAAA deletion
 mcm5-21, chr2R:12737873, A deletion 
 mcm5-22, chr2R:8597548, T deletion
-mcm5-24, chr2L:21664793, TATATA deletion
-*
+mcm5-24, chr2L:21664793, TATATA deletion*
 
 his main finding: 
 
 *I really expected to find lots of deletions suggesting repair of DSBs via NHEJ, but I didn't. This finding is consistent with the 95-ish single genomes I sequenced from homozygous c3g females where I also failed to find any deletions. *
 
 So, maybe another figure would be deletions vs. the major allele? eg, histogram of indel change in nucleotides. 
+
+## 11 March 2019
+
+```{bash eval=FALSE}
+vcftools --vcf variants/all_samples.vs_dm6.bwaUniq.vcf --keep-only-indels --freq --out indelFrq.test
+
+ vcftools --vcf variants/all_samples.vs_dm6.bwaUniq.vcf --keep-only-indels --counts --out indelCount.test
+cat indelCount.test.frq.count  | tail -n +2 | tr ":" "\t" | nl -n ln | head -n 1000 > dev/indelCount.test.frq.count
+
+
+```
+
+
+importing a CSV with a variable number of columns: https://stackoverflow.com/questions/18922493/how-can-you-read-a-csv-file-in-r-with-different-number-of-columns
+
+
+```{r echo=FALSE}
+
+max_fields<- count.fields("indelCount.test.frq.count", sep = '\t') %>% max()
+
+
+tubble <- read.table("indelCount.test.frq.count", header = FALSE, sep = "\t", fill = TRUE,col.names = paste0("V",seq_len(max_fields)))
+
+tubble.df <- tubble[1:7]
+names(tubble.df) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+tubble.df$var_num <- 1
+
+for (i in seq(8,max_fields,2)){
+tubble.df.tmp <- cbind(tubble[1:5], tubble[c(i,i+1)])
+names(tubble.df.tmp) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+tubble.df.tmp$var_num <- i/2-2
+tubble.df <- rbind(tubble.df, tubble.df.tmp %>% filter(!is.na(allele_count))  )
+}
+
+tubble.df <- tubble.df %>% mutate(allele_freq = allele_count/chroms_avail) %>% as_tibble()
+
+```
+
+Filter to main-line autosomes?
+
+Just some top-level stuff: how many chroms avail per site?
+
+```{r echo=FALSE}
+
+ggplot(tubble.df) + geom_histogram(aes(x=chroms_avail), bins = max(tubble.df$chroms_avail)/5) +theme_clear() + scale_x_continuous( breaks = seq(1,max(tubble.df$chroms_avail),5)) + scale_y_log10()
+
+```
+
+Distribution of variants per variant site?
+```{r echo=FALSE}
+
+ggplot(tubble.df) + geom_histogram(aes(x=var_count), bins = max(tubble.df$var_count))+theme_clear() + scale_x_continuous( breaks = seq(1,max(tubble.df$var_count)+1,1))
+
+```
+
+Minimum allele frequency by site:
+
+
+```{r echo=FALSE}
+ggplot(tubble.df %>%  group_by(site_id) %>% summarize(maf = min(allele_freq), vc = as.factor(max(var_count))) ) + geom_freqpoly(aes(x=maf, group=vc, color=vc))
+```
+
+
+```{r echo=FALSE}
+ggplot(tubble.df %>%  group_by(site_id) %>% summarize(mac = min(allele_count) )) + geom_histogram(aes(x=mac))
+```
+
+Let's start with the simplest case: biallelic sites with all 60 chromosomes available and allele count of 1 (ie, one het indiv.)
+hmmm, a number of MNPs showing up; let's try to filter those out for a really simple case. 
+
+
+```{bash eval=FALSE}
+
+grep "#" variants/all_samples.vs_dm6.bwaUniq.vcf > variants/all_samples.vs_dm6.bwaUniq.vcf.noMNP.tmp
+
+vcftools --vcf variants/all_samples.vs_dm6.bwaUniq.vcf --keep-only-indels --recode --recode-INFO-all --stdout | grep -v "#" | grep -v "TYPE=mnp" | grep -v "TYPE=complex" >> variants/all_samples.vs_dm6.bwaUniq.vcf.noMNP.tmp
+
+
+
+vcftools --vcf variants/all_samples.vs_dm6.bwaUniq.vcf.noMNP.tmp --keep-only-indels --counts --out indelCount.test
+ 
+cat indelCount.test.frq.count  | tail -n +2 | tr ":" "\t" | nl -n ln | head -n 1000 > dev/indelCount.test.frq.count
+
+
+```
+
+```{r echo=FALSE}
+
+tubble.df %>% filter(var_count == 2) %>% filter(chroms_avail==60) %>% filter(allele_count==1) %>% nrow()
+```
+
+Hmmm, that seems like a lot. Let's get all the mainline chroms and look at them 
+
+
+```{bash eval=FALSE}
+
+cat indelCount.test.frq.count  | tail -n +2 | tr ":" "\t" | nl -n ln | grep -v Un | grep -v rand  > dev/indelCount.test.frq.count
+
+```
+
+Hmm, yes 10k+ is a lot???
+
+Corbin & Talia suggest a histogram of delta-bp for each indel...
+```{r echo=FALSE}
+tubble.df.biallele <- tubble.df %>% filter(var_count == 2) %>% filter(chroms_avail==60) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`))
+```
+
+spread by multiple columns: https://stackoverflow.com/questions/30592094/r-spreading-multiple-columns-with-tidyr
+
+calculate delta-bp relative to the larger allele count or if it's 50/50, use the reference (allele 1)
+
+```{r echo=FALSE}
+
+tubble.df.biallele.tmp <- tubble.df.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+tubble.df.biallele <- rbind(tubble.df.biallele.tmp, tubble.df.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+
+```
+
+
+
+```{r echo=FALSE}
+
+ggplot(tubble.df.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom))
+
+#ggplot(tubble.df.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom), position='jitter', alpha=0.8) + theme_clear() + theme_void()  + theme(legend.position="none", plot.background = element_rect(fill = 'black', colour = 'black'))
+```
+
+
+ugh who knows, I'll figure it  out tomorrow
+
+
+
 
 
 ## Bibliography
