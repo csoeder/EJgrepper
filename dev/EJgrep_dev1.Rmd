@@ -661,6 +661,35 @@ ggplot(tubble.df.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom))
 
 ugh who knows, I'll figure it  out tomorrow
 
+## 13 March 2019
+
+Ah, the variants with AC == 0 are examples of fixed differences vs. the dm6 reference. 
+
+It looks like the variants with delta_bp == 0 are cases of ??recognized SNPs?? being counted as indels?? what??
+
+Maybe something like
+
+```{bash eval=FALSE}
+
+cat variants/all_samples.vs_dm6.bwaUniq.vcf | ~/modules/vcflib/bin/vcfallelicprimitives | vcftools --vcf - --keep-only-indels  --recode --recode-INFO-all --stdout  > test.IndelsOnly.primSplit.vcf
+```
+
+hmmm yes, this seems right.
+
+
+maybe add some depth-filtering to improve genotype calls? avg depth is pretty high so it could be set stringent. 
+The --minDP 10  flag in vcftools will do this (sets the called genotype to ./.; --counts then tallies this GT as uncalled.)
+
+
+maybe something like 
+
+```{bash eval=FALSE}
+
+cat variants/all_samples.vs_dm6.bwaUniq.vcf | vcftools --vcf -  --minDP 10 --recode --recode-INFO-all --stdout | ~/modules/vcflib/bin/vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode-INFO-all --stdout | vcftools --vcf -  --counts --out tomato.count 
+```
+
+??
+
 
 
 
