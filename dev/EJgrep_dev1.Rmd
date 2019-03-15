@@ -690,7 +690,144 @@ cat variants/all_samples.vs_dm6.bwaUniq.vcf | vcftools --vcf -  --minDP 10 --rec
 
 ??
 
+## Pi Day 2019
 
+Hmmm, looks like vcfallelicprimatives breaks up MNPs and such, possibly unwanted. Maybe shunt the MNPs down a different path? "complex" repeats it doesn't seem to touch.
+
+modding the tomato.count.frq.count file from yesterday...
+
+
+```{bash eval=FALSE}
+
+cat variants/all_samples.vs_dm6.bwaUniq.vcf | vcftools --vcf -  --minDP 10 --recode --recode-INFO-all --stdout | ~/modules/vcflib/bin/vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode-INFO-all --stdout | grep -v "TYPE=complex"| vcftools --vcf -  --counts --out tomato.count 
+```
+
+
+```{bash eval=FALSE}
+cat tomato.count.frq.count | tail -n +2 | tr ":" "\t" | nl -n ln | grep -v Un | grep -v rand  > dev/tomato.count.frq.count
+```
+
+
+```{r echo=FALSE}
+
+freak_count_loader <- function(filename){
+	
+	max_fields<- count.fields(filename, sep = '\t') %>% max()
+
+	tubb <- read.table(filename, header = FALSE, sep = "\t", fill = TRUE,col.names = paste0("V",seq_len(max_fields)))
+
+	tubb.df <- tubb[1:7]
+
+	names(tubb.df) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+	tubb.df$var_num <- 1
+	
+	for (i in seq(8,max_fields,2)){
+		tubb.df.tmp <- cbind(tubb[1:5], tubb[c(i,i+1)])
+		names(tubb.df.tmp) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+		tubb.df.tmp$var_num <- i/2-2
+		tubb.df <- rbind(tubb.df, tubb.df.tmp %>% filter(!is.na(allele_count))  )
+	}
+
+	tubb.df <- tubb.df %>% mutate(allele_freq = allele_count/chroms_avail) %>% as_tibble()
+
+	
+	
+		return( tubb.df)
+}
+
+
+primitive_tubby <- freak_count_loader("tomato.count.frq.count") 
+
+primitive_tubby.biallele <- primitive_tubby %>% filter(var_count == 2) %>% filter(chroms_avail==60) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+
+primitive_tubby.biallele.tmp <- primitive_tubby.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+primitive_tubby.biallele <- rbind(primitive_tubby.biallele.tmp, primitive_tubby.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+
+ggplot(primitive_tubby.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom))
+```
+
+Ok, I see part of the problem. the unite() pipe segment recasts the column as a string apparently?
+
+## 15 March 2019
+
+Apparently these are the offspring of a single mating between two flies? That makes the sharp peaks of the histogram more reasonable, but not the lopsided chromosomal distribution:
+
+
+```{r echo=FALSE}
+ggplot(primitive_tubby.biallele %>% filter(chrom != "chrY") %>%  filter(chrom != "chrM")) + geom_freqpoly(aes(x=mac, color=chrom), bins=31)
+```
+
+Getting some weird errors on the proposed pipeline so going through stepwise:
+
+```{bash eval=FALSE}
+cat variants/all_samples.vs_dm6.bwaUniq.vcf | vcftools --vcf -  --minDP 10 --recode --recode-INFO-all --out test.depthFiltered
+
+ cat test.depthFiltered.recode.vcf | grep -v "TYPE=complex" | ~/modules/vcflib/bin/vcfallelicprimitives  >  test.depthFiltered.simplified.primitive.vcf
+```
+
+hmm it looks like the sites which are broken  down by vcfallelicprimitives are in a different format than the SNPs. 
+
+Also, vcfallelicprimitiives reclassifies some variants as complex so might as well exclude them afterwards....
+
+```{bash eval=FALSE}
+vcftools --vcf test.depthFiltered.simplified.primitive.vcf --keep-only-indels --recode --recode-INFO-all  --stdout > test.depthFiltered.simplified.primitive.indelOnly.vcf 
+
+vcftools --vcf test.depthFiltered.simplified.primitive.indelOnly.vcf   --counts --out test.depthFiltered.simplified.primitive.indelOnly.count 
+
+cat test.depthFiltered.simplified.primitive.indelOnly.count.frq.count | tail -n +2 | tr ":" "\t" | nl -n ln | grep -v Un | grep -v rand  > dev/test.depthFiltered.simplified.primitive.indelOnly.count.frq.count
+
+``` 
+
+
+```{r echo=FALSE}
+
+
+primitive_tubby <- freak_count_loader("test.depthFiltered.simplified.primitive.indelOnly.count.frq.count") 
+
+primitive_tubby.biallele <- primitive_tubby %>% filter(var_count == 2) %>% filter(chroms_avail==60) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+
+primitive_tubby.biallele.tmp <- primitive_tubby.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+primitive_tubby.biallele <- rbind(primitive_tubby.biallele.tmp, primitive_tubby.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+
+ggplot(primitive_tubby.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom), position='jitter')
+
+```
+
+```{r echo=FALSE}
+ggplot(primitive_tubby.biallele %>% filter(chrom != "chrY") %>%  filter(chrom != "chrM")) + geom_freqpoly(aes(x=mac, color=chrom), bins=31)
+```
+
+ok so this looks like some data sanity problems are fixed (eg no indels of length 0) but there are still some issues (eg the bizarre lopsided distribution of allele frequency across chromosomes....)
+
+Returning to the Danny Miller calls:
+
+
+>mcm5-12, chrX:12825436, GAAA deletion
+mcm5-21, chr2R:12737873, A deletion 
+mcm5-22, chr2R:8597548, T deletion
+mcm5-24, chr2L:21664793, TATATA deletion
+
+Slopped these locations 100bp either way and intersected with the VCF:
+
+```{bash eval=FALSE}
+
+cat misc/dannysCalls.prebed | cut -f 2 -d " " | tr -d "," | tr ":" "\t"  | awk '{print $1, $2-100, $2+100}' | tr " " "\t" > misc/dannysCalls.bed 
+
+edtools intersect -wa -wb -a misc/dannysCalls.bed -b test.depthFiltered.simplified.primitive.indelOnly.vcf 
+
+```
+
+The first, chrX:12825436, appears in the VCF but is called as a homozygote (both BWA an BWA-Uniq alignments agree here!)
+
+The second, an A deletion at chr2R:12737873, appears in the VCF, appears to be heterozygous in two different flies (mcm5-21,mcm5-22). Also, there are two insertions (+A, +AA) at this site as well in the samples. (DfMcm5 and Mcm5-A7, respectively). Kind of a dodgy site even in the BWA-Uniq alignment??
+
+The third, a T deletion at chr2R:8597548, appears in the VCF, heterozygous in a single individual. This is another site with 4 different insertion-deletion alleles called. 
+
+The fourth, a TATATA deletion at chr2L:21664793, doesn't appear in this VCF (filtered for depth, variants simplified, complex variants removed, indels only). However, it is picked up in the unfiltered BWA-Uniq VCF as a complex variant: TAC -> CAT. It is called as heterozygous in five individuals: mcm5-04,mcm5-03,mcm5-13,mcm5-18	mcm5-27,mcm5-19. mcm-24, instead of the TATATA deletion, is called as homozygous for the reference (the unfiltered BWA alignment for mcm5-24 has some 5 and 7bp indels but this still gets resolved as an MNP in the BWA-derived VCF. These reads are gone in BWA-Uniq.). The alignments give weak support for the existence of the TAC->CAT variant: the variant sites are there in the reads, but coverage is pretty low and the variation always seems to occur near the ends of the reads. In some cases the complex variant has been imputed from a single SNP near the end of a read. 
 
 
 
