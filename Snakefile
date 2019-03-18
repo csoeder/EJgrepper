@@ -360,6 +360,29 @@ rule contrast_VCFs:
 		"""	
 
 
+rule VCF_winnower:
+	input:
+		vcf_in = "variants/all_samples.vs_dm6.bwaUniq.vcf",
+	output:
+		alleleCounts_out= "analysis/alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out",
+	params:
+		runmem_gb=8,
+		runtime="4:00:00",
+		cores=4,
+		good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4",
+		dpth_filt = 10,
+		min_called = 60,
+	message:
+		"potatoes for breakfast.... "
+	shell:
+		"""
+		vcftools {params.good_chroms} --vcf {input.vcf_in} --minDP {params.dpth_filt} --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --counts --stdout | awk '{{if($3==2)print}}' | awk '{{if($4=={params.min_called})print}}' | tr ":" "\t" | nl -n ln  > {output.alleleCounts_out}
+		"""
+
+
+
+
+
 
 
 rule write_report:

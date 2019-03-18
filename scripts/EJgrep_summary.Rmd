@@ -50,6 +50,34 @@ bam_summary_loader <- function(filename, aligner="bwa", reference='dm6'){
 	
 }
 
+
+
+multicolumn_ACloader <- function(filename){
+	
+	max_fields<- count.fields(filename, sep = '\t') %>% max()
+
+	tubb <- read.table(filename, header = FALSE, sep = "\t", fill = TRUE,col.names = paste0("V",seq_len(max_fields)))
+
+	tubb.df <- tubb[1:7]
+
+	names(tubb.df) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+	tubb.df$var_num <- 1
+	
+	for (i in seq(8,max_fields,2)){
+		tubb.df.tmp <- cbind(tubb[1:5], tubb[c(i,i+1)])
+		names(tubb.df.tmp) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+		tubb.df.tmp$var_num <- i/2-2
+		tubb.df <- rbind(tubb.df, tubb.df.tmp %>% filter(!is.na(allele_count))  )
+	}
+
+	tubb.df <- tubb.df %>% mutate(allele_freq = allele_count/chroms_avail) %>% as_tibble()
+
+	
+	
+		return( tubb.df)
+}
+
+
 ```
 
 # Introduction
@@ -65,6 +93,9 @@ bam_summary_loader <- function(filename, aligner="bwa", reference='dm6'){
 trammel <- read_yaml("config.yaml")
 
 ```
+
+High-thoughoutput sequences in FASTQ format were aligned to the reference genome using BWA[@Li2009] and processed with SAMtools [@Li2009a] and BEDtools [@Quinlan2010]. Variants were called from these alignments using Freebayes [@Garrison2012] and processed using VCFTools[@Danecek2011]. 
+
 
 ## Reference Genomes
 
@@ -88,10 +119,6 @@ refGenomes_summary_df %>% mutate( value=human_readable_croncher(value)) %>% spre
 
 
 ## Sequenced Reads
-
-
-
-
 
 ```{r include=FALSE}
 data_sets.df <- plyr::ldply(trammel$data_sets, data.frame)
@@ -437,7 +464,59 @@ ggplot(vcfCompare_diff_discord) + geom_histogram(aes(x=disc_rate)) + theme_clear
 Combining disjoint and discordant variable sites, there were a total $`r human_readable_croncher( vcfCompare_diff_discord.count %>% filter(chrom=="total" )  %>%  select(count) %>% sum() + vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf!="both") %>%  select(count) %>% sum() ) `$ out of $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total") %>%  select(count) %>% sum() ) `$  disagreements between the two calling methods. 
 
 
+
+## Variant Analysis
+
+```{r echo=FALSE}
+filteredTbl <- freak_count_loader("analysis/alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
+
+
+filteredTbl.biallele <- filteredTbl %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+
+filteredTbl.biallele.tmp <- filteredTbl.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+filteredTbl.biallele <- rbind(filteredTbl.biallele.tmp, filteredTbl.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+```
+
+To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, only proper biallelic indels were retained. Finally, only the consolidated autosomes were considered, and only sites which could be called in all 30 sequenced flies. 
+
+This gave a total of $`r filteredTbl.biallele %>% nrow() ) `$ sites: 
+
+```{r echo=FALSE}
+filteredTbl.biallele %>% group_by(chrom) %>% summarize(count=n()) kable(caption="Quality Biallaeleic INDELs per Chromosome")
+```
+
 # Results
+
+Since DSB is likely to create unique variants in the population, 
+
+```{r echo=FALSE}
+ggplot(primitive_tubby.biallele) + geom_freqpoly(aes(x=mac, color=chrom),bins=31)  + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")
+```
+
+## Already-called variants
+
+
+>mcm5-12, chrX:12825436, GAAA deletion
+mcm5-21, chr2R:12737873, A deletion 
+mcm5-22, chr2R:8597548, T deletion
+mcm5-24, chr2L:21664793, TATATA deletion
+
+
+
+The first, chrX:12825436, appears in the VCF but is called as a homozygote (both BWA an BWA-Uniq alignments agree here!)
+
+The second, an A deletion at chr2R:12737873, appears in the VCF, appears to be heterozygous in two different flies (mcm5-21,mcm5-22). Also, there are two insertions (+A, +AA) at this site as well in the samples. (DfMcm5 and Mcm5-A7, respectively).
+
+The third, a T deletion at chr2R:8597548, appears in the VCF, heterozygous in a single individual. This is another site with 4 different insertion-deletion alleles called. 
+
+The fourth, a TATATA deletion at chr2L:21664793, doesn't appear in this VCF (filtered for depth, variants simplified, complex variants removed, indels only). However, it is picked up in the unfiltered BWA-Uniq VCF as a complex variant: TAC -> CAT. It is called as heterozygous in five individuals: mcm5-04,mcm5-03,mcm5-13,mcm5-18	mcm5-27,mcm5-19. mcm-24, instead of the TATATA deletion, is called as homozygous for the reference (the unfiltered BWA alignment for mcm5-24 has some 5 and 7bp indels but this still gets resolved as an MNP in the BWA-derived VCF. These reads are gone in BWA-Uniq.). The alignments give weak support for the existence of the TAC->CAT variant: the variant sites are there in the reads, but coverage is pretty low and the variation always seems to occur near the ends of the reads. In some cases the complex variant has been imputed from a single SNP near the end of a read. 
+
+# Next Steps
+
+*	Explore PINDEL [@Ye2009] for calling larger variants
+*	Incorporate Talia's data
 
 
 # Bibliography

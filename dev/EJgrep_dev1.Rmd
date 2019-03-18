@@ -829,7 +829,29 @@ The third, a T deletion at chr2R:8597548, appears in the VCF, heterozygous in a 
 
 The fourth, a TATATA deletion at chr2L:21664793, doesn't appear in this VCF (filtered for depth, variants simplified, complex variants removed, indels only). However, it is picked up in the unfiltered BWA-Uniq VCF as a complex variant: TAC -> CAT. It is called as heterozygous in five individuals: mcm5-04,mcm5-03,mcm5-13,mcm5-18	mcm5-27,mcm5-19. mcm-24, instead of the TATATA deletion, is called as homozygous for the reference (the unfiltered BWA alignment for mcm5-24 has some 5 and 7bp indels but this still gets resolved as an MNP in the BWA-derived VCF. These reads are gone in BWA-Uniq.). The alignments give weak support for the existence of the TAC->CAT variant: the variant sites are there in the reads, but coverage is pretty low and the variation always seems to occur near the ends of the reads. In some cases the complex variant has been imputed from a single SNP near the end of a read. 
 
+## 18 March 2019
 
+Nice! adds a help rule to a snakefile:
+https://www.biostars.org/p/220268/
+
+```{r echo=FALSE}
+
+primitive_tubby <- freak_count_loader("analysis/alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
+
+
+primitive_tubby.biallele <- primitive_tubby %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+
+primitive_tubby.biallele.tmp <- primitive_tubby.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+primitive_tubby.biallele <- rbind(primitive_tubby.biallele.tmp, primitive_tubby.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+
+#ggplot(primitive_tubby.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom))
+```
+
+total number of sites: $`r primitive_tubby.biallele %>% nrow() ) `$
+
+primitive_tubby.biallele %>% group_by(chrom) %>% summarize(count=n())
 
 ## Bibliography
 
