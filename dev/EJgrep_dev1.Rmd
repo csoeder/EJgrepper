@@ -849,9 +849,25 @@ primitive_tubby.biallele <- rbind(primitive_tubby.biallele.tmp, primitive_tubby.
 #ggplot(primitive_tubby.biallele) + geom_point(aes(x=mac, y=delta_bp, color=chrom))
 ```
 
-total number of sites: $`r primitive_tubby.biallele %>% nrow() ) `$
-
+total number of sites: $`r primitive_tubby.biallele %>% nrow()  `$
+```{r echo=FALSE}
 primitive_tubby.biallele %>% group_by(chrom) %>% summarize(count=n())
+```
+
+Logarithmic color scale in legend:
+https://stackoverflow.com/questions/8069837/is-there-a-built-in-way-to-do-a-logarithmic-color-scale-in-ggplot2
+
+```{r echo=FALSE}
+ggplot(primitive_tubby.biallele %>%  group_by(mac, delta_bp) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count))  + scale_fill_gradient(name = "number sites", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000))
+```
+
+Thought about a ggMarginal histogram but it wasn't doing much for me
+
+```{r echo=FALSE}
+ggplot(primitive_tubby.biallele) + geom_freqpoly(aes(x=delta_bp,stat(density)), bins=13) + geom_freqpoly(data=primitive_tubby.biallele %>% filter(mac==1), aes(x=delta_bp,stat(density)), bins=13, color='red')
+```
+
+INDEL size & type profile similar between the singletons and the sites at large.
 
 ## Bibliography
 

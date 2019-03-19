@@ -1,7 +1,7 @@
 ---
 title: "End Joining Signatures"
 author: "Charlie Soeder"
-date: "3/5/2019"
+date: "3/18/2019"
 output:
   pdf_document:
     toc: true
@@ -22,9 +22,7 @@ library("readr")
 library("knitr")
 library("ggbio")
 library("VennDiagram")
-
 library("tidyverse")
-
 ```
 
 
@@ -129,8 +127,7 @@ data_sets.df$source<- as.factor(data_sets.df$source)
 ```
 
 
-Control sequences were provided by Danny Miller.
-
+Control sequences were provided by Danny Miller; these consist of the offspring of two individual flies' mating.
 
 
 ```{r echo=FALSE, results='asis'}
@@ -468,7 +465,7 @@ Combining disjoint and discordant variable sites, there were a total $`r human_r
 ## Variant Analysis
 
 ```{r echo=FALSE}
-filteredTbl <- freak_count_loader("analysis/alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
+filteredTbl <- multicolumn_ACloader("analysis/alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
 
 
 filteredTbl.biallele <- filteredTbl %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
@@ -479,24 +476,90 @@ filteredTbl.biallele.tmp <- filteredTbl.biallele %>% filter(`1_allele_count` >= 
 filteredTbl.biallele <- rbind(filteredTbl.biallele.tmp, filteredTbl.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
 ```
 
-To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, only proper biallelic indels were retained. Finally, only the consolidated autosomes were considered, and only sites which could be called in all 30 sequenced flies. 
 
-This gave a total of $`r filteredTbl.biallele %>% nrow() ) `$ sites: 
+
+To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, for the time being only proper biallelic indels were retained. Finally, only the consolidated autosomes were considered, and only sites which could be called in all 30 sequenced flies. 
+
+This gave a total of $`r filteredTbl.biallele %>% nrow()  `$ sites: 
 
 ```{r echo=FALSE}
-filteredTbl.biallele %>% group_by(chrom) %>% summarize(count=n()) kable(caption="Quality Biallaeleic INDELs per Chromosome")
+filteredTbl.biallele %>% group_by(chrom) %>% summarize(count=n()) %>%  kable(caption="Quality Biallaeleic INDELs per Chromosome")
 ```
+
+For these sites, minor and major alleles were assigned on the basis of which of the two variants had a smaller or larger allele count, respectively. INDEL type & size were determined relative to the major allele. 
 
 # Results
 
-Since DSB is likely to create unique variants in the population, 
+## INDEL Size & Frequency
+
 
 ```{r echo=FALSE}
-ggplot(primitive_tubby.biallele) + geom_freqpoly(aes(x=mac, color=chrom),bins=31)  + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")
+ggplot(filteredTbl.biallele %>%  group_by(mac, delta_bp) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count)) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Nucleotides Inserted or Deleted", title="Heatmap of INDEL Count, by Frequency and Size") + scale_fill_gradient(name = "Site Count", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000)) + theme( panel.background = element_rect(fill = "black", colour = "black"))
+```
+
+
+Since DSB is likely to create unique variants in the population, allele frequency is an important property to filter on. To get an idea of the expected allele frequency distribution, consider that for a given variable site, a diploid parent may be homozygous reference (a/a), homozygous alternate (A/A), or heterozygous (a/A). Thus, there are five relevant pairings of genotype: AA x AA, aa x aA, aa x AA, aA x AA, and aA x aA. (aa x aa corresponds to the case in which both parents have the reference allele, and the expectation would be the offspring would as well.) Under random assortment, the aa x aA and aA x AA crosses give a minor allele frequency of 1/4 and the aa x AA and aA x aA crosses give a minor allele frequency of 1/2. Finally, the AA x AA cross corresponds to the case where the parents are fixed for an alternate allele, and thus the offpsring would be expected to be fixed as well; the minor allele frequency would thus be zero. So, given sample of 30 diploid flies, the expected distribution of minor allele counts would be peaks centered on 0, 15, and 30. 
+
+
+
+```{r echo=FALSE}
+ggplot(filteredTbl.biallele) + geom_freqpoly(aes(x=mac),bins=15, color='black') + geom_freqpoly(aes(x=mac, color=chrom),bins=31)  + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")
+mac0 <-filteredTbl.biallele %>% filter(mac == 0) %>% nrow() 
+mac1 <-filteredTbl.biallele %>% filter(mac == 1) %>% nrow() 
+mac2 <-filteredTbl.biallele %>% filter(mac == 2) %>% nrow() 
+macTot <- filteredTbl.biallele %>%  nrow()
+rareRefs <- filteredTbl.biallele %>%  filter(`1_allele_count`<3) %>% filter(`1_allele_count`>0) %>% group_by(mac) %>% summarize(count=n()) %>% select(count) %>% sum()
+```
+
+
+
+At first glance, the distribution is as expected (black line above), but closer inspection reveals some anomalies. First, the peak near zero is not driven by fixed differences with the reference; there are in fact suprisingly few such fixed INDELs ($`r mac0 `$ out of $`r macTot `$ ). Instead, it is almost entirely sites with a variant on one ($`r mac1 `$) or two ($`r mac2 `$) chromosomes across all samples. (All but $`r rareRefs `$ were alternate alleles, ie, disagreements with the reference genome.)
+
+
+Under random assortment, there would be no reason to expect autosomes to have different allele-frequency distributions. However, this isn't the case when the variant sites are grouped by chromsome: the arms of chromosome 3 are enriched in sites with allele frequency ~50% and depleted of the very rare alleles. Conversely, the arms of chromsome 2 are depleted of the medium-frequency alleles and enriched for the rare ones. It also appears that the arms of chromosome 3 are split around the expected peak at MAC=15, into two smaller groups of peaks near MAC~10 and MAC~20. These would correspond to ratios of ~1/6 and 2/6. 
+
+
+```{r echo=FALSE}
+ggplot(filteredTbl.biallele)  + geom_freqpoly(aes(x=delta_bp), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
+```
+
+
+INDEL size ranged from 6bp deletions to 6bp insertions, with a small but significant bias towards deletion:
+
+
+```{r echo=FALSE}
+insert_truth.Tbl <- filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(ins) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+prop.test(insert_truth.Tbl$del, insert_truth.Tbl$del+insert_truth.Tbl$ins)
+```
+
+
+(A similar result holds if the count by type is scaled by the change in length, for a ratio of bp removed to total bp change).
+
+When constrained to a single MAC value, the basic form of the distribution stays the same but the degree of mutational bias varies, with the highest-MAC variants even having a significant excess of insertions. 
+
+
+```{r echo=FALSE}
+
+ggplot(filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(mac,ins) %>% summarise(count=n()) %>% spread(ins,count) %>% rename(ins=`TRUE`, del=`FALSE`) %>%  mutate(rat = prop.test(del, ins+del)$estimate, pea=prop.test(del, ins+del)$p.value, peaAdj = p.adjust(pea, method='bonferroni'))) + geom_line(aes(x=mac, y=rat), alpha=0.25) + geom_point(aes(x=mac, y=rat, alpha=peaAdj<0.05)) + geom_hline(yintercept=0.5, linetype='dotted', color='blue', size=1) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Proportion of Deletions", title="Results of Proportion Test for Deletions, by Minor Allele Count", alpha = "significance\n(adjusted)")
+
+```
+
+
+### Singletons
+
+Of particular interest in the context of DSB repair are INDELs which appear in exactly one sample as a heterozygote, ie, with an allele count of 1. These make up $`r filteredTbl.biallele %>% filter(mac==1) %>% nrow() `$ of $`r filteredTbl.biallele %>% nrow() `$ total sites  ($`r human_readable_croncher(100*(filteredTbl.biallele %>% filter(mac==1) %>% nrow())/(filteredTbl.biallele %>% nrow()))`$ ) %. As previously discussed, they disproportionately appear on the arms of chromosome 2:
+
+
+  
+  
+  
+```{r echo=FALSE}
+filteredTbl.biallele %>% filter(mac==1) %>% group_by(chrom) %>% summarise(count=n())  %>% kable(caption="Distribution of Singleton INDELs Across Autosomes")
 ```
 
 ## Already-called variants
 
+Danny Miller has already investigated these flies for likely candidates, identifying the following:
 
 >mcm5-12, chrX:12825436, GAAA deletion
 mcm5-21, chr2R:12737873, A deletion 
@@ -520,7 +583,4 @@ The fourth, a TATATA deletion at chr2L:21664793, doesn't appear in this VCF (fil
 
 
 # Bibliography
-
-
-
 
