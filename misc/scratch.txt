@@ -1,0 +1,64 @@
+for bass in $(ls | cut -f 1 -d "." | sort | uniq); do 
+	echo "samtools view -H $bass.vs_dm6.bwa.sort.bam | sed 's/ID:$bass$/ID:$bass\tSM:$bass/g' > $bass.vs_dm6.bwa.sort.sam.tmp";
+done | awk '{print "sbatch -n 1 -t 1:00:00 --mem=8G --wrap=~"$0"~"}' | tr '~' '"' | sh 
+
+for bass in $(ls | cut -f 1 -d "." | sort | uniq); do 
+	echo "samtools view $bass.vs_dm6.bwa.sort.bam >> $bass.vs_dm6.bwa.sort.sam.tmp";
+done | awk '{print "sbatch -n 1 -t 1:00:00 --mem=8G --wrap=~"$0"~"}' | tr '~' '"' | sh 
+
+
+
+for bass in $(ls | cut -f 1 -d "." | sort | uniq); do 
+	echo "samtools view -hSb $bass.vs_dm6.bwa.sort.sam.tmp >  $bass.vs_dm6.bwa.sort.bam "
+done | awk '{print "sbatch -n 1 -t 1:00:00 --mem=8G --wrap=~"$0"~"}' | tr '~' '"' | sh 
+
+cat  meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.snpsPerContig.tmp |  awk '{sum+=$1} END { print sum,"total"}' | cat meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.snpsPerContig.tmp  - > meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.snpsPerContig
+
+
+cat PRJNA307070.txt |tail -n +2| cut -f 9 | sort | uniq > sample.list
+python ~/modules/randoLine.py sample.list 28 > sample.subset28.list 
+
+while read -r line; do 
+	echo $line;
+	grep -w "$line" ../../misc/PRJNA307070.txt | cut -f 7,9 | tr "." "_" | awk '{print "sbatch -n 1 --mem 8G -t 4:00:00 --wrap=|mkdir -p "$2"; fastq-dump --split-3 "$1"; mv "$1"* "$2"|"}' | tr '|' '"' | sh ;
+	echo;
+done < ../../misc/sample.subset28.list
+
+
+while read -r line; do 
+	echo $line;
+	samp=$(echo $line | tr "." "_");
+	echo $samp
+	cat "$samp"/*_1.fastq >  "$samp"/"$samp".R1.fq ;
+	cat "$samp"/*_2.fastq >  "$samp"/"$samp".R2.fq ;
+	echo;
+done < ../../misc/sample.subset28.list
+
+
+cat PRJNA307070.txt |tail -n +2 | head -n 1 | cut -f 7,9 | tr "." "_" | awk '{print "sbatch -n 1 --mem 8G -t 4:00:00 --wrap=|mkdir -p "$2"; fastq-dump --split-3 "$1"; mv "$1"* "$2/"|"}' | tr '|' '"'
+
+
+while read -r line; do 
+	sra=$(grep -w "$line" misc/PRJNA307070.txt | cut -f 7 | tr "\n" ",")
+	echo $line | tr "." "_" | awk -v sarah="$sra" '{print ""$1"\nTrue\nFASTQ/control/"$1"/\n"$1".R1.fq\n"$1".R2.fq\ncontrol\ndanny\n[all,control]\n["sarah"]\nchild\n"}' | paste yaml.base - | tr "\t" " " >> control.yaml
+done < misc/sample.subset28.list
+
+
+
+    - name: w1118
+      paired: True
+      path: FASTQ/control/w1118/
+      readsfile1: w1118.R1.fq
+      readsfile2: w1118.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: SRR2044312
+      pedigree: parent
+
+
+
+
+
+
+

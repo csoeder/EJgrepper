@@ -562,9 +562,9 @@ filteredTbl.biallele %>% filter(mac==1) %>% group_by(chrom) %>% summarise(count=
 Danny Miller has already investigated these flies for likely candidates, identifying the following:
 
 >mcm5-12, chrX:12825436, GAAA deletion
-mcm5-21, chr2R:12737873, A deletion 
-mcm5-22, chr2R:8597548, T deletion
-mcm5-24, chr2L:21664793, TATATA deletion
+>mcm5-21, chr2R:12737873, A deletion 
+>mcm5-22, chr2R:8597548, T deletion
+>mcm5-24, chr2L:21664793, TATATA deletion
 
 
 

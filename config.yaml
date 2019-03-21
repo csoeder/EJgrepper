@@ -1,244 +1,552 @@
 data_sets:
     - name: DfMcm5
       paired: True
-      path: FASTQ/controls/Df-Mcm5/
+      path: FASTQ/mutants/Df-Mcm5/
       readsfile1: Df-Mcm5.R1.fq
       readsfile2: Df-Mcm5.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
+      pedigree: parent      
     - name: mcm5-01
       paired: True
-      path: FASTQ/controls/mcm5-01/
+      path: FASTQ/mutants/mcm5-01/
       readsfile1: mcm5-01.R1.fq
       readsfile2: mcm5-01.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-02
       paired: True
-      path: FASTQ/controls/mcm5-02/
+      path: FASTQ/mutants/mcm5-02/
       readsfile1: mcm5-02.R1.fq
       readsfile2: mcm5-02.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-03
       paired: True
-      path: FASTQ/controls/mcm5-03/
+      path: FASTQ/mutants/mcm5-03/
       readsfile1: mcm5-03.R1.fq
       readsfile2: mcm5-03.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-04
       paired: True
-      path: FASTQ/controls/mcm5-04/
+      path: FASTQ/mutants/mcm5-04/
       readsfile1: mcm5-04.R1.fq
       readsfile2: mcm5-04.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-05
       paired: True
-      path: FASTQ/controls/mcm5-05/
+      path: FASTQ/mutants/mcm5-05/
       readsfile1: mcm5-05.R1.fq
       readsfile2: mcm5-05.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-06
       paired: True
-      path: FASTQ/controls/mcm5-06/
+      path: FASTQ/mutants/mcm5-06/
       readsfile1: mcm5-06.R1.fq
       readsfile2: mcm5-06.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-07
       paired: True
-      path: FASTQ/controls/mcm5-07/
+      path: FASTQ/mutants/mcm5-07/
       readsfile1: mcm5-07.R1.fq
       readsfile2: mcm5-07.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-08
       paired: True
-      path: FASTQ/controls/mcm5-08/
+      path: FASTQ/mutants/mcm5-08/
       readsfile1: mcm5-08.R1.fq
       readsfile2: mcm5-08.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-09
       paired: True
-      path: FASTQ/controls/mcm5-09/
+      path: FASTQ/mutants/mcm5-09/
       readsfile1: mcm5-09.R1.fq
       readsfile2: mcm5-09.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-10
       paired: True
-      path: FASTQ/controls/mcm5-10/
+      path: FASTQ/mutants/mcm5-10/
       readsfile1: mcm5-10.R1.fq
       readsfile2: mcm5-10.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-11
       paired: True
-      path: FASTQ/controls/mcm5-11/
+      path: FASTQ/mutants/mcm5-11/
       readsfile1: mcm5-11.R1.fq
       readsfile2: mcm5-11.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-12
       paired: True
-      path: FASTQ/controls/mcm5-12/
+      path: FASTQ/mutants/mcm5-12/
       readsfile1: mcm5-12.R1.fq
       readsfile2: mcm5-12.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-13
       paired: True
-      path: FASTQ/controls/mcm5-13/
+      path: FASTQ/mutants/mcm5-13/
       readsfile1: mcm5-13.R1.fq
       readsfile2: mcm5-13.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-14
       paired: True
-      path: FASTQ/controls/mcm5-14/
+      path: FASTQ/mutants/mcm5-14/
       readsfile1: mcm5-14.R1.fq
       readsfile2: mcm5-14.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-15
       paired: True
-      path: FASTQ/controls/mcm5-15/
+      path: FASTQ/mutants/mcm5-15/
       readsfile1: mcm5-15.R1.fq
       readsfile2: mcm5-15.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-16
       paired: True
-      path: FASTQ/controls/mcm5-16/
+      path: FASTQ/mutants/mcm5-16/
       readsfile1: mcm5-16.R1.fq
       readsfile2: mcm5-16.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-17
       paired: True
-      path: FASTQ/controls/mcm5-17/
+      path: FASTQ/mutants/mcm5-17/
       readsfile1: mcm5-17.R1.fq
       readsfile2: mcm5-17.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-18
       paired: True
-      path: FASTQ/controls/mcm5-18/
+      path: FASTQ/mutants/mcm5-18/
       readsfile1: mcm5-18.R1.fq
       readsfile2: mcm5-18.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-19
       paired: True
-      path: FASTQ/controls/mcm5-19/
+      path: FASTQ/mutants/mcm5-19/
       readsfile1: mcm5-19.R1.fq
       readsfile2: mcm5-19.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-20
       paired: True
-      path: FASTQ/controls/mcm5-20/
+      path: FASTQ/mutants/mcm5-20/
       readsfile1: mcm5-20.R1.fq
       readsfile2: mcm5-20.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-21
       paired: True
-      path: FASTQ/controls/mcm5-21/
+      path: FASTQ/mutants/mcm5-21/
       readsfile1: mcm5-21.R1.fq
       readsfile2: mcm5-21.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-22
       paired: True
-      path: FASTQ/controls/mcm5-22/
+      path: FASTQ/mutants/mcm5-22/
       readsfile1: mcm5-22.R1.fq
       readsfile2: mcm5-22.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-23
       paired: True
-      path: FASTQ/controls/mcm5-23/
+      path: FASTQ/mutants/mcm5-23/
       readsfile1: mcm5-23.R1.fq
       readsfile2: mcm5-23.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-24
       paired: True
-      path: FASTQ/controls/mcm5-24/
+      path: FASTQ/mutants/mcm5-24/
       readsfile1: mcm5-24.R1.fq
       readsfile2: mcm5-24.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-25
       paired: True
-      path: FASTQ/controls/mcm5-25/
+      path: FASTQ/mutants/mcm5-25/
       readsfile1: mcm5-25.R1.fq
       readsfile2: mcm5-25.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-26
       paired: True
-      path: FASTQ/controls/mcm5-26/
+      path: FASTQ/mutants/mcm5-26/
       readsfile1: mcm5-26.R1.fq
       readsfile2: mcm5-26.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-27
       paired: True
-      path: FASTQ/controls/mcm5-27/
+      path: FASTQ/mutants/mcm5-27/
       readsfile1: mcm5-27.R1.fq
       readsfile2: mcm5-27.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: mcm5-28
       paired: True
-      path: FASTQ/controls/mcm5-28/
+      path: FASTQ/mutants/mcm5-28/
       readsfile1: mcm5-28.R1.fq
       readsfile2: mcm5-28.R2.fq
-      experimental: control
-      source: dannyMiller
-      subgroups: [all,control]
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
     - name: Mcm5-A7
       paired: True
-      path: FASTQ/controls/Mcm5-A7/
+      path: FASTQ/mutants/Mcm5-A7/
       readsfile1: Mcm5-A7.R1.fq
       readsfile2: Mcm5-A7.R2.fq
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
+      pedigree: parent
+    - name: CantonS
+      paired: True
+      path: FASTQ/controls/CantonS/
+      readsfile1: CantonS.R1.fq
+      readsfile2: CantonS.R2.fq
       experimental: control
-      source: dannyMiller
+      source: danny
       subgroups: [all,control]
+      sra: [SRR2044310]
+      pedigree: parent
+    - name: w1118
+      paired: True
+      path: FASTQ/controls/w1118/
+      readsfile1: w1118.R1.fq
+      readsfile2: w1118.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR2044312]
+      pedigree: parent
+    - name: w5_16
+      paired: True
+      path: FASTQ/controls/w5_16/
+      readsfile1: w5_16.R1.fq
+      readsfile2: w5_16.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069372,SRR3069373,SRR3069374,SRR3069375,]
+      pedigree: child
+    - name: w15_9
+      paired: True
+      path: FASTQ/controls/w15_9/
+      readsfile1: w15_9.R1.fq
+      readsfile2: w15_9.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069174,SRR3069175,]
+      pedigree: child
+    - name: w4_8
+      paired: True
+      path: FASTQ/controls/w4_8/
+      readsfile1: w4_8.R1.fq
+      readsfile2: w4_8.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069284,SRR3069285,SRR3069286,SRR3069287,]
+      pedigree: child
+    - name: cs2_6
+      paired: True
+      path: FASTQ/controls/cs2_6/
+      readsfile1: cs2_6.R1.fq
+      readsfile2: cs2_6.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3068942,SRR3068943,SRR3068944,SRR3068945,]
+      pedigree: child
+    - name: w4_17
+      paired: True
+      path: FASTQ/controls/w4_17/
+      readsfile1: w4_17.R1.fq
+      readsfile2: w4_17.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069312,SRR3069313,SRR3069314,SRR3069315,]
+      pedigree: child
+    - name: w3_12
+      paired: True
+      path: FASTQ/controls/w3_12/
+      readsfile1: w3_12.R1.fq
+      readsfile2: w3_12.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069212,SRR3069213,SRR3069214,SRR3069215,]
+      pedigree: child
+    - name: cs12_5
+      paired: True
+      path: FASTQ/controls/cs12_5/
+      readsfile1: cs12_5.R1.fq
+      readsfile2: cs12_5.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3068832,SRR3068833,]
+      pedigree: child
+    - name: w4_3
+      paired: True
+      path: FASTQ/controls/w4_3/
+      readsfile1: w4_3.R1.fq
+      readsfile2: w4_3.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069264,SRR3069265,SRR3069266,SRR3069267,]
+      pedigree: child
+    - name: w15_8
+      paired: True
+      path: FASTQ/controls/w15_8/
+      readsfile1: w15_8.R1.fq
+      readsfile2: w15_8.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069172,SRR3069173,]
+      pedigree: child
+    - name: w13_13
+      paired: True
+      path: FASTQ/controls/w13_13/
+      readsfile1: w13_13.R1.fq
+      readsfile2: w13_13.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069156,SRR3069157,]
+      pedigree: child
+    - name: w5_15
+      paired: True
+      path: FASTQ/controls/w5_15/
+      readsfile1: w5_15.R1.fq
+      readsfile2: w5_15.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069368,SRR3069369,SRR3069370,SRR3069371,]
+      pedigree: child
+    - name: w12_7
+      paired: True
+      path: FASTQ/controls/w12_7/
+      readsfile1: w12_7.R1.fq
+      readsfile2: w12_7.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069122,SRR3069123,]
+      pedigree: child
+    - name: w3_24
+      paired: True
+      path: FASTQ/controls/w3_24/
+      readsfile1: w3_24.R1.fq
+      readsfile2: w3_24.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069244,SRR3069245,SRR3069246,SRR3069247,]
+      pedigree: child
+    - name: w4_7
+      paired: True
+      path: FASTQ/controls/w4_7/
+      readsfile1: w4_7.R1.fq
+      readsfile2: w4_7.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069280,SRR3069281,SRR3069282,SRR3069283,]
+      pedigree: child
+    - name: w11_13
+      paired: True
+      path: FASTQ/controls/w11_13/
+      readsfile1: w11_13.R1.fq
+      readsfile2: w11_13.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069108,SRR3069109,]
+      pedigree: child
+    - name: w12_1
+      paired: True
+      path: FASTQ/controls/w12_1/
+      readsfile1: w12_1.R1.fq
+      readsfile2: w12_1.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069110,SRR3069111,]
+      pedigree: child
+    - name: w12_12
+      paired: True
+      path: FASTQ/controls/w12_12/
+      readsfile1: w12_12.R1.fq
+      readsfile2: w12_12.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069130,SRR3069131,]
+      pedigree: child
+    - name: w4_6
+      paired: True
+      path: FASTQ/controls/w4_6/
+      readsfile1: w4_6.R1.fq
+      readsfile2: w4_6.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069276,SRR3069277,SRR3069278,SRR3069279,]
+      pedigree: child
+    - name: w3_16
+      paired: True
+      path: FASTQ/controls/w3_16/
+      readsfile1: w3_16.R1.fq
+      readsfile2: w3_16.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069228,SRR3069229,SRR3069230,SRR3069231,]
+      pedigree: child
+    - name: w15_6
+      paired: True
+      path: FASTQ/controls/w15_6/
+      readsfile1: w15_6.R1.fq
+      readsfile2: w15_6.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069168,SRR3069169,]
+      pedigree: child
+    - name: cs8_8
+      paired: True
+      path: FASTQ/controls/cs8_8/
+      readsfile1: cs8_8.R1.fq
+      readsfile2: cs8_8.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069078,SRR3069079,SRR3069080,SRR3069081,]
+      pedigree: child
+    - name: w13_1
+      paired: True
+      path: FASTQ/controls/w13_1/
+      readsfile1: w13_1.R1.fq
+      readsfile2: w13_1.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069134,SRR3069135,]
+      pedigree: child
+    - name: w12_5
+      paired: True
+      path: FASTQ/controls/w12_5/
+      readsfile1: w12_5.R1.fq
+      readsfile2: w12_5.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069118,SRR3069119,]
+      pedigree: child
+    - name: w5_17
+      paired: True
+      path: FASTQ/controls/w5_17/
+      readsfile1: w5_17.R1.fq
+      readsfile2: w5_17.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069376,SRR3069377,SRR3069378,SRR3069379,]
+      pedigree: child 
+    - name: w15_7
+      paired: True
+      path: FASTQ/controls/w15_7/
+      readsfile1: w15_7.R1.fq
+      readsfile2: w15_7.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069170,SRR3069171,]
+      pedigree: child
+    - name: cs12_3
+      paired: True
+      path: FASTQ/controls/cs12_3/
+      readsfile1: cs12_3.R1.fq
+      readsfile2: cs12_3.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3068828,SRR3068829,]
+      pedigree: child
+    - name: cs2_7
+      paired: True
+      path: FASTQ/controls/cs2_7/
+      readsfile1: cs2_7.R1.fq
+      readsfile2: cs2_7.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3068946,SRR3068947,SRR3068948,SRR3068949,]
+      pedigree: child 
+    - name: w13_4
+      paired: True
+      path: FASTQ/controls/w13_4/
+      readsfile1: w13_4.R1.fq
+      readsfile2: w13_4.R2.fq
+      experimental: control
+      source: danny
+      subgroups: [all,control]
+      sra: [SRR3069138,SRR3069139,]
+      pedigree: child
+ 
+
+
+
+
+
 
 
 reference_genomes:

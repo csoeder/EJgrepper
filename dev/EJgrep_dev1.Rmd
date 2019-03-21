@@ -869,5 +869,41 @@ ggplot(primitive_tubby.biallele) + geom_freqpoly(aes(x=delta_bp,stat(density)), 
 
 INDEL size & type profile similar between the singletons and the sites at large.
 
+## 20 March 2019
+
+OKAY so it turns out that the reads I have been using are actually Talia's mcm5 mutants which explains some things I guess. 
+
+Updating the YAML to reflect this; they are now in the subgroup "mutants". 
+
+The flies from [@Miller2016] are on NCBI as PRJNA285112 (isogenized parental flies, w1118 and Canton S) and PRJNA307070 (~200 individual male offspring). Since these are parent/offspring comparisons, maybe add a new tag (pedigree: parent/child)?
+
+Per NCBI, the mating was "mother w5 and isogenic w[1118] father"
+
+Hmm, looks like the offspring were run on 4 lanes and thus 4 different SRAs will need to be downloaded and merged per sample :(
+
+Uh.... fastq-dump says 
+
+>fastq-dump --split-3 SRR2044310
+Rejected 431205 READS because of filtering out non-biological READS
+Read 25541271 spots for SRR2044310
+Written 25541271 spots for SRR2044310
+
+... which is great and everything but I didn't set --skip-technical or --split-spot? Are they automatically invoked by --split-3?????
+>Filters for individual reads       Applied only with --split-spot set
+  --skip-technical                 Dump only biological reads 
+
+Anyway the outcome is three files, two of paired reads and one of unpaired:
+>$ ls
+SRR2044310_1.fastq  SRR2044310_2.fastq  SRR2044310.fastq
+
+## 21 March 2019
+
+All of the DM flies are males except for one of the parents. What about Talia's flies? Looking at the breadth of coverage of the chrY, the median is ~30% covered, with two exceptions ~2%. By contrast, chrX was consistently ~90% covered.
+
+The DM flies were subsampled down to 28 for a balanced comparison. 
+
+
+
+
 ## Bibliography
 
