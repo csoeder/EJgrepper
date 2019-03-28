@@ -898,7 +898,7 @@ SRR2044310_1.fastq  SRR2044310_2.fastq  SRR2044310.fastq
 
 ## 21 March 2019
 
-All of the DM flies are males except for one of the parents. What about Talia's flies? Looking at the breadth of coverage of the chrY, the median is ~30% covered, with two exceptions ~2%. By contrast, chrX was consistently ~90% covered.
+All of the DM flies are males except for one of the parents. What about Talia's flies? Looking at the breadth of coverage of the chrY, the median is ~30% covered, with two exceptions ~2%. By contrast, chrX was consistently ~90% covered. Talia says they are all Males
 
 The DM flies were subsampled down to 28 for a balanced comparison. 
 

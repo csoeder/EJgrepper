@@ -98,7 +98,6 @@ High-thoughoutput sequences in FASTQ format were aligned to the reference genome
 ## Reference Genomes
 
 
-
 ```{r include=FALSE}
 refGenomes_summary_df <- read_delim("meta/reference_genomes.summary", 
     "\t", escape_double = FALSE, col_names = FALSE, 
@@ -108,6 +107,7 @@ names(refGenomes_summary_df) <- c("refGenome","measure","value")
 
 ```
 
+The dm6 reference genome was used for read alignment:
 
 ```{r echo=FALSE}
 
@@ -123,20 +123,34 @@ data_sets.df <- plyr::ldply(trammel$data_sets, data.frame)
 data_sets.df$name <- as.factor(data_sets.df$name)
 data_sets.df$paired<- as.factor(data_sets.df$paired)
 data_sets.df$experimental<- as.factor(data_sets.df$experimental)
-data_sets.df$source<- as.factor(data_sets.df$source)
+data_sets.df$subgroups<- as.factor(data_sets.df$subgroups)
+data_sets.df$pedigree<- as.factor(data_sets.df$pedigree)
+data_sets.df$sex<- as.factor(data_sets.df$sex)
+
+data_sets.df.sparse <- data_sets.df %>% filter(subgroups=='all') %>% select(-c(subgroups,sra)) %>% distinct() 
+
 ```
 
-
-Control sequences were provided by Danny Miller; these consist of the offspring of two individual flies' mating.
-
+Two treatments have been sequenced: a control line, and an mcm5 mutant. The data available include two parent flies per treatment as well as 28 of their male offspring: 
 
 ```{r echo=FALSE, results='asis'}
-data_sets.df %>% filter(subgroups=='all') %>% group_by(experimental) %>% summarise(sample_count=n()) %>% kable(caption="Number of Sequenced Samples by Treatment")
+data_sets.df.sparse %>% group_by(experimental,pedigree) %>% summarise(sample_count=n()) %>% kable(caption="Number of Sequenced Samples by Treatment")
 ```
 
+The samples from the mcm5 mutant cross were provided by Talia:
+
 ```{r echo=FALSE}
-data_sets.df %>% filter(subgroups=='all') %>%  select(c(name, paired, experimental, source)) %>%  arrange(experimental, desc(name)) %>% kable(caption="Sequenced Experimental Samples")
+data_sets.df.sparse %>% filter(experimental == 'mutant') %>% select(c(name, source, pedigree, sex)) %>%  arrange(pedigree, desc(name)) %>% kable(caption="Sequenced Samples from mcm5 Mutant Cross")
 ```
+
+The control samples were first published in [@Miller2016]; this cross consists of a male w1118 and a female Canton S, as well as their male offspring. 28 of the 196 sequenced offspring were selected at random and downloaded from NCBI, as were the sequenced parents:
+
+>Males were numbered based on whether their father was homozygous w1118 or Canton-S and the number of their het- erozygous mother. For example, male cs12.3 had a Canton-S father, its mother was female number 12, and it was the third male selected for DNA extraction.
+
+```{r echo=FALSE}
+data_sets.df.sparse %>% filter(experimental == 'control') %>% select(c(name, source, pedigree, sex)) %>%  arrange(pedigree, desc(name)) %>% kable(caption="Sequenced Samples from Control Cross")
+```
+
 
 
 ### Pre-Processing
@@ -156,7 +170,7 @@ fastp_summary$measure <- as.factor(fastp_summary$measure)
 
 
 ```{r echo=FALSE, include=FALSE}
-filtration_stats <- inner_join(fastp_summary %>%  filter(type=="prefiltered" | type == 'postfiltered'), data_sets.df, by=c("name"="name"))
+filtration_stats <- inner_join(fastp_summary %>%  filter(type=="prefiltered" | type == 'postfiltered'), data_sets.df.sparse, by=c("name"="name"))
 filtration_stats$type <- factor(filtration_stats$type, levels=c("prefiltered", "postfiltered"))
 ```
 
@@ -167,18 +181,17 @@ Starting FASTQ files contained a total of  $`r sum( filtration_stats %>% filter(
 
 ```{r echo=FALSE}
 pre_post_counts <- filtration_stats %>% filter(measure=='total_reads') %>%  group_by(type)  %>%  summarise(minimum = min(value), average=mean(value) , maximum = max(value)) 
-retention_percent <- filtration_stats %>% filter(measure=='total_reads') %>%  filter(subgroups=="all")%>% select(c(name,type,value)) %>%  spread(type,value) %>% mutate(retention=100*postfiltered/prefiltered) %>%  summarise(type='percent retention', minimum = min(retention), average=mean(retention) , maximum = max(retention))
+retention_percent <- filtration_stats %>% filter(measure=='total_reads') %>% select(c(name,type,value)) %>%  spread(type,value) %>% mutate(retention=100*postfiltered/prefiltered) %>%  summarise(type='percent retention', minimum = min(retention), average=mean(retention) , maximum = max(retention))
 ```
+
 ```{r echo=FALSE}
 rbind(pre_post_counts, retention_percent) %>% mutate(minimum = human_readable_croncher(minimum), average=human_readable_croncher(average) , maximum = human_readable_croncher(maximum)) %>% kable(caption="Read Count and Percent Retention")
 ```
 
-
-
 Filtration also increased the read quality, as seen in the increase in the fraction of reads with an average quality score > 30:
 
 ```{r echo=FALSE}
-ggplot(filtration_stats %>% filter(measure == "q30_rate")) + geom_line(aes(group=name, x=type,y=100*value)) +  geom_point(aes(x=type, y = 100*value, color=name)) + labs(title = "Percent of Reads with a mean QUAL > 30", y="Percent QUAL > 30", x="") + theme_clear()
+ggplot(filtration_stats %>% filter(measure == "q30_rate")) + geom_line(aes(group=name, x=type,y=100*value)) +  geom_point(aes(x=type, y = 100*value, color=experimental)) + labs(title = "Percent of Reads with a mean QUAL > 30", y="Percent QUAL > 30", x="") + theme_clear()
 
 ```
 
@@ -187,7 +200,7 @@ ggplot(filtration_stats %>% filter(measure == "q30_rate")) + geom_line(aes(group
 Duplicate reads were also detected; these will be filtered during alignment:
 
 ```{r echo=FALSE, include=FALSE}
-dupe_stats <- inner_join(fastp_summary %>% filter(type=='duplication' & measure =='rate') %>%  mutate(percent=value*100) %>% select(c(name,percent)), data_sets.df, by=c("name"="name"))
+dupe_stats <- inner_join(fastp_summary %>% filter(type=='duplication' & measure =='rate') %>%  mutate(percent=value*100) %>% select(c(name,percent)), data_sets.df.sparse, by=c("name"="name"))
 ```
 
 ```{r echo=FALSE}
@@ -229,18 +242,22 @@ The fraction of reads retained at each filtration step:
 
 
 ```{r echo=FALSE}
-ggplot(readcount_process) + geom_line(aes(group=sample, x=measure,y=value)) + geom_point(aes(x=measure, y=value, group=sample,color=sample))  + labs(title="Read Counts by Processing Step: Unmapped, Mapped, Filtered", x="", y="Number Reads" ) + theme_clear() + theme(axis.text.x = element_text(angle = -45, hjust = 0), legend.position='none' ) 
+#ggplot(readcount_process) +
+ggplot(inner_join(readcount_process, data_sets.df.sparse, by=c("sample"="name"))) + geom_line(aes(group=sample, x=measure,y=value)) + geom_point(aes(x=measure, y=value, group=sample,color=experimental, shape=pedigree))  + labs(title="Read Counts by Processing Step: Unmapped, Mapped, Filtered", x="", y="Number Reads" ) + theme_clear() + theme(axis.text.x = element_text(angle = -45, hjust = 0), legend.position='none' ) 
 
 ```
-
-
 
 ```{r echo=FALSE}
 
 readcount_process.spread <- readcount_process %>% select(-c(aligner)) %>%  spread(measure, value) %>%  mutate(mapping_retention=total_mapped_count/total_read_count, filter_retention = filtered_mapped_count/total_mapped_count)
 
 
-readcount_process.spread%>% gather(total_read_count:filtered_mapped_count, key="measure", value="value") %>%  group_by(measure) %>% summarise(minimum = min(value), average=mean(value), median = median(value), maximum = max(value)) %>% mutate(minimum = human_readable_croncher(minimum), average=human_readable_croncher(average), median = human_readable_croncher(median), maximum = human_readable_croncher(maximum)) %>% kable(caption="Read Counts During Alignment & Filtration")
+
+readcount_process.spread.gathered <- readcount_process.spread%>% gather(total_read_count:filtered_mapped_count, key="measure", value="value") %>%  group_by(measure) %>% summarise(minimum = min(value), average=mean(value), median = median(value), maximum = max(value)) %>% mutate(minimum = human_readable_croncher(minimum), average=human_readable_croncher(average), median = human_readable_croncher(median), maximum = human_readable_croncher(maximum))
+
+#readcount_process.spread.gathered$measure <- factor(readcount_process.spread.gathered$measure, levels=c("total_read_count", "total_mapped_count","filtered_mapped_count"))
+
+readcount_process.spread.gathered %>% kable(caption="Read Counts During Alignment & Filtration")
 
 ```
 
@@ -260,7 +277,7 @@ readcount_process.spread %>% gather(mapping_retention:filter_retention, key="mea
 before_After.cov <- inner_join( vs_dm6.bwa %>%  filter(measure=='avg_depth' | measure == 'total_breadth') %>% select(-c(aligner)) %>% spread(measure, value), vs_dm6.bwaUniq %>%  filter(measure=='avg_depth' | measure == 'total_breadth') %>% select(-c(aligner)) %>% spread(measure, value), by='sample', suffix=c(".before",".after") ) %>%  mutate(depth_retention = avg_depth.after/avg_depth.before, breadth_retention=total_breadth.after/total_breadth.before)
 
 
-before_After.cov.gathered.meta <- inner_join(before_After.cov %>%  gather(avg_depth.before:breadth_retention, key="measure", value="value") , data_sets.df, by=c("sample"="name") ) 
+before_After.cov.gathered.meta <- inner_join(before_After.cov %>%  gather(avg_depth.before:breadth_retention, key="measure", value="value") , data_sets.df.sparse, by=c("sample"="name") ) 
 
 
 ```
@@ -338,7 +355,7 @@ all_samples.vs_dm6.calledVariants.summary.sprud %>%  transmute( aligner=aligner,
 ```
 
 
-To build this VCF, `r nrow(data_sets.df %>%  filter(subgroups == 'all'))` samples called jointly. However, not all sites were called in all samples (eg, due to coverage differences). The sites had the following group-wide call rate:
+To build this VCF, `r nrow(data_sets.df.sparse)` samples called jointly. However, not all sites were called in all samples (eg, due to coverage differences). The sites had the following group-wide call rate:
 
 
 
@@ -350,7 +367,7 @@ all_samples.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/all_samples.vs
 all_samples.calledVariants.bwaUniq.lmiss$aligner <- "bwaUniq"
 
 
-nsamps <- nrow(data_sets.df %>%  filter(subgroups == 'all') )
+nsamps <- nrow(data_sets.df.sparse)
 
 
 all_samples.calledVariants.lmiss <- rbind(all_samples.calledVariants.bwa.lmiss, all_samples.calledVariants.bwaUniq.lmiss) %>% select(c(aligner, N_MISS)) %>%  mutate(aligner=as.factor(aligner), N_PRES=nsamps-N_MISS)
@@ -365,9 +382,6 @@ ggplot(all_samples.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=ali
 
 
 The fraction of jointly called SNPs which are individually callable:
-
-
-
 
 ```{r echo=FALSE, include=FALSE}
 all_samples.bwa.imiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwa.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
@@ -398,69 +412,9 @@ ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color
 
 ### VCF comparison & contrast
 
+~~The two variant-calling methods are compared and contrasted over the main-line chromosomes ( chr2L, chr2R, chr3L, chr3R, chr4, chrM, chrX, chrY).~~
 
-The two variant-calling methods are compared and contrasted over the main-line chromosomes ( chr2L, chr2R, chr3L, chr3R, chr4, chrM, chrX, chrY). 
- 
-
-```{r echo=FALSE, include = FALSE}
-vcfCompare_diff_both <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.B", col_names = FALSE)
-names(vcfCompare_diff_both) <- c("count","chrom")
-vcfCompare_diff_both$vcf <- as.factor("both")
-
-vcfCompare_diff_bwa <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.1", col_names = FALSE)
-names(vcfCompare_diff_bwa) <- c("count","chrom")
-vcfCompare_diff_bwa$vcf <- as.factor("bwa")
-
-
-vcfCompare_diff_bwaUniq <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.2", col_names = FALSE)
-names(vcfCompare_diff_bwaUniq) <- c("count","chrom")
-vcfCompare_diff_bwaUniq$vcf <- as.factor("bwaUniq")
-
-vcfCompare_diff <- rbind(vcfCompare_diff_both, vcfCompare_diff_bwa, vcfCompare_diff_bwaUniq)
-
-```
-
-Of the  $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total") %>%  select(count) %>% sum() ) `$ total variant sites called between the two VCFs, most ($`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf=="both") %>%  select(count) %>% sum() ) `$) were called in both files; $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf!="both") %>%  select(count) %>% sum() ) `$ were unique to one of them:
-
-```{r echo=FALSE}
-
-grid.newpage()
-
-draw.pairwise.venn(area1=sum(vcfCompare_diff %>% filter(vcf=='bwa' | vcf == "both") %>% filter(chrom=="total") %>%  select(count)), area2=sum(vcfCompare_diff %>% filter(vcf=='bwaUniq' | vcf == "both") %>% filter(chrom=="total") %>%  select(count)), cross.area =sum(vcfCompare_diff %>% filter(vcf == "both") %>% filter(chrom=="total") %>%  select(count)), category=c('bwa', 'bwaUniq'), fill = c("blue", "red"), alpha = rep(0.75, 2))
-
-```
-
-
-
-```{r echo=FALSE, include=FALSE}
-vcfCompare_diff_discord.count <- read_table2("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc.count", col_names = FALSE)
-names(vcfCompare_diff_discord.count) <- c("count","chrom")
-vcfCompare_diff_discord.count$vcf <- as.factor("discord")
-
-```
-
-Of the $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf=="both") %>%  select(count) %>% sum() ) `$ variable sites shared by the two VCF files,  $`r human_readable_croncher( vcfCompare_diff_discord.count %>% filter(chrom=="total" )  %>%  select(count) %>% sum()) `$ contained at least once sample which was called differently between the two VCF files. 
-
-
-
-
-```{r echo=FALSE, include=FALSE}
-
-vcfCompare_diff_discord <- read_delim("meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc", "\t", escape_double = FALSE, col_names = FALSE,trim_ws = TRUE)
-names(vcfCompare_diff_discord) <- c("chrom", "pos", "vcf", "matching", "called", "discord", "disc_rate")
-```
-
-
-
-```{r echo=FALSE}
-ggplot(vcfCompare_diff_discord) + geom_histogram(aes(x=disc_rate)) + theme_clear() + labs(x="Fraction Discordant Samples", y="Number of Variable Sites", title="Histogram of Variable Site Count\nby Fraction of Discordant Samples")
-
-```
-
-
-Combining disjoint and discordant variable sites, there were a total $`r human_readable_croncher( vcfCompare_diff_discord.count %>% filter(chrom=="total" )  %>%  select(count) %>% sum() + vcfCompare_diff %>% filter(chrom=="total" ) %>% filter(vcf!="both") %>%  select(count) %>% sum() ) `$ out of $`r human_readable_croncher( vcfCompare_diff %>% filter(chrom=="total") %>%  select(count) %>% sum() ) `$  disagreements between the two calling methods. 
-
-
+_important for comparing variant-calling methods, but not for comparing unrelated sample groups - they get called individually!_
 
 ## Variant Analysis
 

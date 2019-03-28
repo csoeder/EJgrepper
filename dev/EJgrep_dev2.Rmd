@@ -1,0 +1,23 @@
+---
+title: "End Joining Signatures - dev2"
+author: "Charlie Soeder"
+date: "3/25/2019"
+output: pdf_document
+bibliography: references.bib
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(readr)
+
+```
+
+##25 March 2019
+From Talia:
+
+>If Danny's progeny are from two types of parental crosses, I guess I would just do analysis on one of those crosses, just to keep it easier.  Find Indels in those progeny, then compare to mcm5a7 progeny.
+
+Ok, going to restrict to w3 and w4
