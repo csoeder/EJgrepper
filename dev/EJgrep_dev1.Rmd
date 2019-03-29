@@ -898,9 +898,150 @@ SRR2044310_1.fastq  SRR2044310_2.fastq  SRR2044310.fastq
 
 ## 21 March 2019
 
-All of the DM flies are males except for one of the parents. What about Talia's flies? Looking at the breadth of coverage of the chrY, the median is ~30% covered, with two exceptions ~2%. By contrast, chrX was consistently ~90% covered. Talia says they are all Males
+All of the DM flies are males except for one of the parents. What about Talia's flies? Looking at the breadth of coverage of the chrY, the median is ~30% covered, with two exceptions ~2%. By contrast, chrX was consistently ~90% covered. Talia says they are all Males.
 
 The DM flies were subsampled down to 28 for a balanced comparison. 
+
+UGHHHH adding the SRA tags gives each of up to four SRAs its own line!!! 
+```{r echo=FALSE}
+
+data_sets.df %>% select(-c(sra)) %>% filter(subgroups == 'all') %>% distinct() 
+
+```
+
+>Males were numbered based on whether their father was homozygous w1118 or Canton-S and the number of their het- erozygous mother. For example, male cs12.3 had a Canton-S father, its mother was female number 12, and it was the third male selected for DNA extraction. Sibling numbers may not be continuous, as males with low DNA concentrations after DNA extraction were not selected for sequencing.
+
+What does this mean as far as sample subset choice????
+
+Need to rewrite the joint VCF rule to call variants by group; can always summon the whole-sample joint call via the "all" group
+
+Will the VCF comparison & contrast section be at all relevant when the two experimental treatments are unrelated? 
+(If I'm using BWA-Uniq, I'll still want to compare to BWA, even if I ultimately don't use the BWA alignment for variant calling)
+
+Also, what about using parental variants to validate/mask child variants?
+
+## 22 March 2019
+
+>can you look at the indel frequency distribution without chromosome 3 for mcm21-28 samples?  do not include mcm5-A7 and DfMcm5.
+
+To answer this: generalize the current VCF_winnower rule, with preprocessing the input vcf to restrict the sample?
+
+```{bash eval=FALSE}
+
+cp variants/mutant.vs_dm6.bwaUniq.vcf variants/potato.vs_dm6.bwaUniq.vcf
+
+snakemake -n -p analysis/potato.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out
+```
+>Building DAG of jobs...
+InputFunctionException in line 250 of /proj/cdjones_lab/csoeder/EJgrepper/Snakefile:
+KeyError: 'potato'
+
+Hmm, looks like snakemake actually needs it to be a listed group in the config.yaml. But will it accept the extant variants/potato.vs_dm6.bwaUniq.vcf or try to force an new calling for the new group?
+
+Using an updated config file:
+```{bash eval=FALSE}
+
+keepers=$(for i in {1..8}; do echo --indv mcm5-2"$i"; done  | tr "\n" " ")
+
+vcftools --vcf variants/mutant.vs_dm6.bwaUniq.vcf $keepers --recode --recode-INFO-all --stdout >  variants/potato.vs_dm6.bwaUniq.vcf
+ 
+snakemake  --configfile config.tmp.yaml -n -p analysis/potato.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out 
+```
+
+Works... well actually no the sample number filter is currently hardcoded into the Winnower rule. But copypasting the snakemake verboss output and modding (also means we can filter the chroms now rather than later)
+
+```{bash eval=FALSE}
+vcftools --chr chr2L --chr chr2R --chr chrX --vcf variants/potato.vs_dm6.bwaUniq.vcf --minDP 10 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --counts --stdout | awk '{if($3==2)print}' | awk '{if($4==16)print}' | tr ":" "\t" | nl -n ln  > analysis/potato.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out
+
+```
+
+
+okay!!
+
+```{r echo=FALSE}
+
+taliaSubset <- freak_count_loader("analysis/potato.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
+
+
+taliaSubset.biallele <- taliaSubset %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+
+taliaSubset.biallele.tmp <- taliaSubset.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+taliaSubset.biallele <- rbind(taliaSubset.biallele.tmp, taliaSubset.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+```
+
+
+Filtering as before, there are  $`r taliaSubset.biallele %>% nrow()  `$ sites:
+
+
+```{r echo=FALSE}
+taliaSubset.biallele %>% group_by(chrom) %>% summarize(count=n()) %>%  kable(caption="Quality Biallaeleic INDELs per Chromosome")
+```
+
+
+```{r echo=FALSE}
+ggplot(taliaSubset.biallele %>%  group_by(mac, delta_bp) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count)) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Nucleotides Inserted or Deleted", title="Heatmap of INDEL Count, by Frequency and Size") + scale_fill_gradient(name = "Site Count", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000)) + theme( panel.background = element_rect(fill = "black", colour = "black"))  + scale_x_continuous(breaks=seq(0,8, 1))
+```
+
+The sudden appearance of variants with a MAC of 0 is because when the starting VCF is subsetted by individual, variant sites are retained even if all subsetted individuals are 0/0. 
+Kicking out all sites with an alternate allele count of 0....
+
+```{r echo=FALSE}
+taliaSubset.biallele.someAlt <- taliaSubset.biallele %>% filter(`2_allele_count` > 0 ) 
+```
+
+With non-variable sites removed there are $`r taliaSubset.biallele.someAlt %>% nrow()  `$ sites remaining:
+
+
+```{r echo=FALSE}
+taliaSubset.biallele.someAlt %>% group_by(chrom) %>% summarize(count=n()) %>%  kable(caption="Quality Biallaeleic INDELs per Chromosome")
+```
+
+
+```{r echo=FALSE}
+ggplot(taliaSubset.biallele.someAlt %>%  group_by(mac, delta_bp) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count)) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Nucleotides Inserted or Deleted", title="Heatmap of INDEL Count, by Frequency and Size") + scale_fill_gradient(name = "Site Count", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000)) + theme( panel.background = element_rect(fill = "black", colour = "black"))  + scale_x_continuous(breaks=seq(0,8, 1))
+```
+
+
+```{r echo=FALSE}
+ggplot(taliaSubset.biallele.someAlt) + geom_freqpoly(aes(x=mac),bins=6, color='black') + geom_freqpoly(aes(x=mac, color=chrom),bins=9)  + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")  + scale_x_continuous(breaks=seq(0,8, 1))
+```
+
+
+```{r echo=FALSE}
+ggplot(taliaSubset.biallele.someAlt) + geom_freqpoly(aes(x=mac, stat(density)),bins=6, color='black') + geom_freqpoly(aes(x=mac, color=chrom, stat(density)),bins=9)  + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Site Density", title="Density of Quality INDELs, by Minor Allele Count and Chromosome")  + scale_x_continuous(breaks=seq(0,8, 1))
+```
+
+
+
+```{r echo=FALSE}
+ggplot(taliaSubset.biallele.someAlt)  + geom_freqpoly(aes(x=delta_bp), bins=13) + geom_freqpoly(aes(x=delta_bp, color=chrom), bins=13) + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
+```
+
+
+Singletons:
+
+```{r echo=FALSE}
+taliaSubset.biallele.someAlt %>% filter(mac==1) %>% group_by(chrom) %>% summarise(count=n())  %>% kable(caption="Distribution of Singleton INDELs")
+```
+
+But, I'm not sure why there are singletons appearing on the X? Being males there is only one chrX so it would be read as homozygous at all points (and, the MAC for chrX is exaggerated by 2x). 
+
+Looking at the allele counts mod 2 will give a lower bound to the number of sites on chrX with a heterozygote called (it won't reveal cases in which there are an even number of heterozygotes)
+
+
+```{r echo=FALSE}
+
+taliaSubset.biallele.someAlt %>% filter(chrom=="chrX") %>% mutate(mod = mac %% 2) %>% group_by(mod) %>% summarise(count=n())
+```
+
+
+Using the --het flag with vcftools to take another look??
+
+```{bash eval=FALSE}
+vcftools --chr chrX --vcf variants/potato.vs_dm6.bwaUniq.vcf --minDP 10 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --het --out taliaSubset
+```
 
 
 

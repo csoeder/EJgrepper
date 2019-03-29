@@ -310,20 +310,22 @@ rule vcf_reporter:
 
 rule summon_VCF_analytics_base:
 	input:
-		vcf_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_{ref_genome}.{aligner}.summary", prefix=wildcards.prefix, ref_genome="dm6", aligner=["bwa","bwaUniq"])
+		vcf_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_dm6.{aligner}.summary", prefix=["control","mutant"], aligner=["bwaUniq"])
 	output:
-		full_report = "meta/{prefix}.vs_{ref_genome}.calledVariants.summary"
+		full_report = "meta/allGroups.vs_dm6.bwaUniq.calledVariants.summary"
 	params:
 		runmem_gb=1,
 		runtime="1:00",
 		cores=1,
 	message:
 		"collecting all alignment metadata.... "
-	shell:
-		"""
-		prefix={wildcards.prefix}
-		cat {input.vcf_reports} | sed -e 's/^/'$prefix'\t/g'> {output.full_report}
-		"""
+	run:
+		shell("rm -f {output.full_report}")
+		for report in input.vcf_reports:
+			exp = report.split("/")[-1].split('.')[0]
+			shell("""
+			cat {report} | sed -e 's/^/'{exp}'\t/g' >> {output.full_report}
+				""")
 
 # rule contrast_VCFs:
 # 	input:
@@ -372,19 +374,19 @@ rule VCF_winnower:
 		vcf_in = "variants/{prefix}.vs_dm6.bwaUniq.vcf",
 	output:
 		alleleCounts_out= "analysis/{prefix}.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out",
+		cleanVcf_out= "variants/{prefix}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.vcf",
 	params:
 		runmem_gb=8,
 		runtime="4:00:00",
 		cores=4,
 		good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4",
 		dpth_filt = 10,
-		min_called = 60,
+		max_uncalled = 0,
 	message:
 		"potatoes for breakfast.... "
-	shell:
-		"""
-		vcftools {params.good_chroms} --vcf {input.vcf_in} --minDP {params.dpth_filt} --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --counts --stdout | awk '{{if($3==2)print}}' | awk '{{if($4=={params.min_called})print}}' | tr ":" "\t" | nl -n ln  > {output.alleleCounts_out}
-		"""
+	run:
+		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}""")
+		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | nl -n ln  > {output.alleleCounts_out}""")
 
 
 

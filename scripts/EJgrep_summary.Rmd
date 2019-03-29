@@ -23,6 +23,7 @@ library("knitr")
 library("ggbio")
 library("VennDiagram")
 library("tidyverse")
+library("broom")
 ```
 
 
@@ -148,9 +149,27 @@ The control samples were first published in [@Miller2016]; this cross consists o
 >Males were numbered based on whether their father was homozygous w1118 or Canton-S and the number of their het- erozygous mother. For example, male cs12.3 had a Canton-S father, its mother was female number 12, and it was the third male selected for DNA extraction.
 
 ```{r echo=FALSE}
-data_sets.df.sparse %>% filter(experimental == 'control') %>% select(c(name, source, pedigree, sex)) %>%  arrange(pedigree, desc(name)) %>% kable(caption="Sequenced Samples from Control Cross")
+
+
+data_sets.df.sparse <- data_sets.df %>% filter(subgroups=='all') %>% select(-c(subgroups,sra)) %>% distinct() 
+
+data_sets.df.sparse.crossMeta <- data_sets.df.sparse %>% filter(experimental == 'control') %>% select(c(name, source, pedigree, sex))  %>% mutate(tmp=name) %>% separate(tmp, sep="_", into = c("mating","offspring_id"))  %>% mutate(tmp=mating) %>% separate(tmp, sep="[sw]", into=c("A","B"))%>% mutate(tmp=mating) %>% separate(tmp, sep="[0-9]", into=c("A","C")) %>% mutate(mating=case_when(pedigree=='child' ~ mating), father_type=case_when(pedigree=='child' ~ A), mother_id=case_when(pedigree=='child' ~ B) ) %>% select(-c(A,B,C)) %>% mutate(father_type=case_when(father_type=='w' ~ "w1118",father_type=='cs' ~ "CantonS") ) 
+
+
 ```
 
+```{r echo=FALSE}
+
+
+data_sets.df.sparse.crossMeta %>% select(-c(mating))%>% arrange(pedigree, desc(name)) %>% kable(caption="Sequenced Samples from Control Cross")
+```
+
+
+```{r echo=FALSE}
+
+data_sets.df.sparse.crossMeta %>% filter(pedigree=='child') %>% group_by(father_type, mother_id) %>% summarize(count=n()) %>% kable(caption="Number of Male Offsping Sequenced, by Cross Type and Female ID")
+
+```
 
 
 ### Pre-Processing
@@ -301,7 +320,9 @@ covstats.dpth %>% kable(caption="Depth of Coverage Statistics for Raw and Filter
 
 
 ```{r echo=FALSE}
-ggplot(depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))))  +geom_line(aes(group=sample, x=measure,y=value))+ geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_text(data=depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))) %>% filter(value < 25), aes(as.factor("after"),value,label=sample)) + theme_clear()  + theme( legend.position='none' ) +  labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Reads Per BP, Genome-Wide" ) 
+depth.process <- inner_join(depth.process, data_sets.df.sparse %>% select(-c("paired", "path", "readsfile1", "readsfile2")), by=c("sample"="name"))
+
+ggplot(depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))))  +geom_line(aes(group=sample, x=measure,y=value))+ geom_point(aes(group=sample, x=measure,y=value, shape=experimental, color=pedigree)) + geom_text(data=depth.process %>%  select(-c(depth_retention,measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after"))) %>% filter(value < 25), aes(as.factor("after"),value,label=sample)) + theme_clear()   +  labs(title="Depth Of Coverage for Raw and Filtered Alignments", x="", y="Reads Per BP, Genome-Wide" ) 
 
 ```
 
@@ -323,74 +344,78 @@ covstats.brdth %>% kable(caption="Breadth of Coverage Statistics for Raw and Fil
 Breadth of coverage, ie, the percentage of the genome covered by at least one read:
 
 ```{r echo=FALSE}
-ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) ) + geom_point(aes(group=sample, x=measure,y=value, color=sample)) + geom_line(aes(group=sample, x=measure,y=value)) + geom_text(data=breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) %>% filter(value < 87), aes(as.factor("after"),value,label=sample)) + theme_clear()  + theme( legend.position='none' ) + labs(title="Breadth Of Coverage for Raw and Filtered Alignments", x="", y="Percentage of Reference Genome Mapped To" )
 
+breadth.process <- inner_join(breadth.process, data_sets.df.sparse %>% select(-c("paired", "path", "readsfile1", "readsfile2")), by=c("sample"="name"))
+
+
+
+ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value) ) + geom_point(aes(group=sample, x=measure,y=value, shape=experimental, color=pedigree)) + geom_line(aes(group=sample, x=measure,y=value)) + theme_clear()  + labs(title="Breadth Of Coverage for Raw and Filtered Alignments", x="", y="Percentage of Reference Genome Mapped To" )
+#  + geom_text(data=breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(before:after, key=measure, value=value) %>% mutate(measure=factor(measure, levels=c("before","after")), value=100*value), aes(as.factor("after"),value,label=sample, x=)) 
 ```
 
 
 ## Called Variants
 
-The BWA and BWA-Uniq alignments were independently used to call variants:
-
-mappings were used to jointly call variants in VCF format via Freebayes [@Garrison2012] using standard filters. 
-
+The BWA-Uniq alignments for the control and mutant flies were independently used to call variants in VCF format via Freebayes [@Garrison2012] using standard filters. 
 
 
 ```{r echo=FALSE, include=FALSE}
-all_samples.vs_dm6.calledVariants.summary <- read_delim("meta/all_samples.vs_dm6.calledVariants.summary", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
-names(all_samples.vs_dm6.calledVariants.summary) <- c("subset", "aligner", "variant_type", "count")
-all_samples.vs_dm6.calledVariants.summary$aligner <- as.factor(all_samples.vs_dm6.calledVariants.summary$aligner)
-all_samples.vs_dm6.calledVariants.summary$variant_type <- as.factor(all_samples.vs_dm6.calledVariants.summary$variant_type)
 
+allGroups.vs_dm6.calledVariants.summary <- read_delim("meta/allGroups.vs_dm6.bwaUniq.calledVariants.summary", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+names(allGroups.vs_dm6.calledVariants.summary) <- c("group", "aligner", "variant_type", "count")
+allGroups.vs_dm6.calledVariants.summary$aligner <- as.factor(allGroups.vs_dm6.calledVariants.summary$aligner)
+allGroups.vs_dm6.calledVariants.summary$variant_type <- as.factor(allGroups.vs_dm6.calledVariants.summary$variant_type)
 
 reference_genomes_summaryStats.sprud <- refGenomes_summary_df %>%  spread(measure,value) %>%  select(c(-number_contigs)) 
 
+allGroups.vs_dm6.calledVariants.summary.sprud <- allGroups.vs_dm6.calledVariants.summary %>% spread(variant_type, count) %>%  transmute( aligner=aligner, group = group, INDELs = total_indel_count, SNPs = total_snp_count) 
 
-all_samples.vs_dm6.calledVariants.summary.sprud <- all_samples.vs_dm6.calledVariants.summary %>% spread(variant_type, count) %>%  transmute( aligner=aligner, INDELs = total_indel_count, SNPs = total_snp_count) 
-
-all_samples.vs_dm6.calledVariants.summary.sprud$total_bp <- reference_genomes_summaryStats.sprud$number_bases
+allGroups.vs_dm6.calledVariants.summary.sprud$total_bp <- reference_genomes_summaryStats.sprud$number_bases
 
 
-all_samples.vs_dm6.calledVariants.summary.sprud %>%  transmute( aligner=aligner, INDELs = INDELs, INDEL_per_kb=1000*INDELs/total_bp, SNPs = SNPs, SNP_per_kb=1000*SNPs/total_bp) %>% mutate(INDELs=human_readable_croncher(SNPs), INDELs=human_readable_croncher(SNPs) ) %>%  kable(caption="Breadth of Coverage Statistics for Raw and Filtered Alignments", digits=1 )
+allGroups.vs_dm6.calledVariants.summary.sprud %>%  transmute( aligner=aligner, INDELs = INDELs, INDEL_per_kb=1000*INDELs/total_bp, SNPs = SNPs, SNP_per_kb=1000*SNPs/total_bp) %>% mutate(INDELs=human_readable_croncher(SNPs), INDELs=human_readable_croncher(SNPs) ) %>%  kable(caption="Variant Counts and Frequency by Type and Group", digits=1 )
 ```
 
 
-To build this VCF, `r nrow(data_sets.df.sparse)` samples called jointly. However, not all sites were called in all samples (eg, due to coverage differences). The sites had the following group-wide call rate:
+For each group VCF, 30 samples from the group called jointly. However, not all sites were called in all samples (eg, due to coverage differences). The sites had the following group-wide call rate:
 
 
 
 ```{r echo=FALSE, include=FALSE}
-all_samples.calledVariants.bwa.lmiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwa.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
-all_samples.calledVariants.bwa.lmiss$aligner <- "bwa"
+mutant.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/mutant.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+mutant.calledVariants.bwaUniq.lmiss$group <- "mutant"
 
-all_samples.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
-all_samples.calledVariants.bwaUniq.lmiss$aligner <- "bwaUniq"
+control.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/control.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+control.calledVariants.bwaUniq.lmiss$group <- "control"
 
-
-nsamps <- nrow(data_sets.df.sparse)
-
-
-all_samples.calledVariants.lmiss <- rbind(all_samples.calledVariants.bwa.lmiss, all_samples.calledVariants.bwaUniq.lmiss) %>% select(c(aligner, N_MISS)) %>%  mutate(aligner=as.factor(aligner), N_PRES=nsamps-N_MISS)
+allGroups.calledVariants.lmiss <- rbind(control.calledVariants.bwaUniq.lmiss, mutant.calledVariants.bwaUniq.lmiss) %>% select(c(group, N_MISS, N_DATA)) %>%  mutate(group=as.factor(group), N_PRES=floor(N_DATA/2))
 
 ```
 
 
 
 ```{r echo=FALSE}
-ggplot(all_samples.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=aligner, color=aligner), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
+
+nsamps <- max(allGroups.calledVariants.lmiss$N_PRES)
+
+ggplot(allGroups.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=group, color=group), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
+
 ```
 
 
 The fraction of jointly called SNPs which are individually callable:
 
 ```{r echo=FALSE, include=FALSE}
-all_samples.bwa.imiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwa.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
-all_samples.bwa.imiss$aligner <- "bwa"
 
-all_samples.bwaUniq.imiss <- read_delim("meta/VCFs/all_samples.vs_dm6.bwaUniq.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
-all_samples.bwaUniq.imiss$aligner <- "bwaUniq"
 
-all_samples.imiss  <- rbind(all_samples.bwa.imiss, all_samples.bwaUniq.imiss)  %>%  mutate(name=as.factor(INDV), aligner=as.factor(aligner), N_PRES=N_DATA-N_MISS) %>% select(c( name, N_MISS, N_PRES, F_MISS,aligner))
+mutant.calledVariants.imiss <- read_delim("meta/VCFs/mutant.vs_dm6.bwaUniq.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+mutant.calledVariants.imiss$group <- "mutant"
+
+control.calledVariants.imiss <- read_delim("meta/VCFs/control.vs_dm6.bwaUniq.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+control.calledVariants.imiss$group <- "control"
+
+
+allGroups.calledVariants.imiss <- rbind(control.calledVariants.imiss, mutant.calledVariants.imiss)  %>%  mutate(name=as.factor(INDV), group=as.factor(group), N_PRES=N_DATA-N_MISS) %>% select(c( name, N_MISS, N_PRES, F_MISS,group))
 
 ```
 
@@ -406,41 +431,43 @@ all_samples.imiss.augmented <- all_samples.imiss.augmented %>%  gather(breadth:d
 ```
 
 ```{r echo=FALSE}
-ggplot(all_samples.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=aligner, shape=aligner)) + facet_grid(.~measure, scales="free_x") + theme_clear() + labs(x="", y="Fraction of Sites Callable", title="Jointly Called Variants Callable per Sample,\n by Breadth and Depth of Coverage")
+ggplot(allGroups.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=group, shape=group)) + facet_grid(.~measure, scales="free_x") + theme_clear() + labs(x="", y="Fraction of Sites Callable", title="Jointly Called Variants Callable per Sample,\n by Breadth and Depth of Coverage")
 
 ```
-
-### VCF comparison & contrast
-
-~~The two variant-calling methods are compared and contrasted over the main-line chromosomes ( chr2L, chr2R, chr3L, chr3R, chr4, chrM, chrX, chrY).~~
-
-_important for comparing variant-calling methods, but not for comparing unrelated sample groups - they get called individually!_
 
 ## Variant Analysis
 
 ```{r echo=FALSE}
-filteredTbl <- multicolumn_ACloader("analysis/alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
 
+filteredTbl.cntrl <- multicolumn_ACloader("analysis/control.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
+filteredTbl.cntrl$group <- as.factor("control")
+filteredTbl.mut <- multicolumn_ACloader("analysis/mutant.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
+filteredTbl.mut$group <- as.factor("mutant")
 
-filteredTbl.biallele <- filteredTbl %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+filteredTbl.biallele <- rbind(filteredTbl.cntrl, filteredTbl.mut) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
 
 
 filteredTbl.biallele.tmp <- filteredTbl.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
 
-filteredTbl.biallele <- rbind(filteredTbl.biallele.tmp, filteredTbl.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`))
+filteredTbl.biallele <- rbind(filteredTbl.biallele.tmp, filteredTbl.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`)) %>% mutate( group=`1_group`) %>%  select(-c(`2_group`))
 ```
 
 
 
 To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, for the time being only proper biallelic indels were retained. Finally, only the consolidated autosomes were considered, and only sites which could be called in all 30 sequenced flies. 
 
-This gave a total of $`r filteredTbl.biallele %>% nrow()  `$ sites: 
+Between the two treatments, this gave a total of $`r filteredTbl.biallele %>% nrow()  `$ sites: 
 
 ```{r echo=FALSE}
-filteredTbl.biallele %>% group_by(chrom) %>% summarize(count=n()) %>%  kable(caption="Quality Biallaeleic INDELs per Chromosome")
+filteredTbl.biallele %>% group_by(chrom,group) %>% summarize(count=n()) %>% spread(group,count) %>%  kable(caption="Quality Biallaeleic INDELs per Chromosome")
 ```
 
 For these sites, minor and major alleles were assigned on the basis of which of the two variants had a smaller or larger allele count, respectively. INDEL type & size were determined relative to the major allele. 
+
+_parental variant removal_
+
+
+
 
 # Results
 
@@ -448,7 +475,7 @@ For these sites, minor and major alleles were assigned on the basis of which of 
 
 
 ```{r echo=FALSE}
-ggplot(filteredTbl.biallele %>%  group_by(mac, delta_bp) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count)) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Nucleotides Inserted or Deleted", title="Heatmap of INDEL Count, by Frequency and Size") + scale_fill_gradient(name = "Site Count", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000)) + theme( panel.background = element_rect(fill = "black", colour = "black"))
+ggplot(filteredTbl.biallele %>%  group_by(mac, delta_bp,group) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count)) +facet_grid(group~.) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Nucleotides Inserted or Deleted", title="Heatmap of INDEL Count, by Frequency and Size") + scale_fill_gradient(name = "Site Count", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000)) + theme( panel.background = element_rect(fill = "black", colour = "black"))
 ```
 
 
@@ -457,7 +484,7 @@ Since DSB is likely to create unique variants in the population, allele frequenc
 
 
 ```{r echo=FALSE}
-ggplot(filteredTbl.biallele) + geom_freqpoly(aes(x=mac),bins=15, color='black') + geom_freqpoly(aes(x=mac, color=chrom),bins=31)  + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")
+ggplot(filteredTbl.biallele) + geom_freqpoly(aes(x=mac),bins=15, color='black') + geom_freqpoly(aes(x=mac, color=chrom),bins=31) + facet_grid(group~.) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")
 mac0 <-filteredTbl.biallele %>% filter(mac == 0) %>% nrow() 
 mac1 <-filteredTbl.biallele %>% filter(mac == 1) %>% nrow() 
 mac2 <-filteredTbl.biallele %>% filter(mac == 2) %>% nrow() 
@@ -465,16 +492,16 @@ macTot <- filteredTbl.biallele %>%  nrow()
 rareRefs <- filteredTbl.biallele %>%  filter(`1_allele_count`<3) %>% filter(`1_allele_count`>0) %>% group_by(mac) %>% summarize(count=n()) %>% select(count) %>% sum()
 ```
 
+revisit this:
 
+_At first glance, the distribution is as expected (black line above), but closer inspection reveals some anomalies. First, the peak near zero is not driven by fixed differences with the reference; there are in fact suprisingly few such fixed INDELs ($`r mac0 `$ out of $`r macTot `$ ). Instead, it is almost entirely sites with a variant on one ($`r mac1 `$) or two ($`r mac2 `$) chromosomes across all samples. (All but $`r rareRefs `$ were alternate alleles, ie, disagreements with the reference genome.)_
+(It looks like there are many more fixed difference vs dm6 in the control flies???)
 
-At first glance, the distribution is as expected (black line above), but closer inspection reveals some anomalies. First, the peak near zero is not driven by fixed differences with the reference; there are in fact suprisingly few such fixed INDELs ($`r mac0 `$ out of $`r macTot `$ ). Instead, it is almost entirely sites with a variant on one ($`r mac1 `$) or two ($`r mac2 `$) chromosomes across all samples. (All but $`r rareRefs `$ were alternate alleles, ie, disagreements with the reference genome.)
-
-
-Under random assortment, there would be no reason to expect autosomes to have different allele-frequency distributions. However, this isn't the case when the variant sites are grouped by chromsome: the arms of chromosome 3 are enriched in sites with allele frequency ~50% and depleted of the very rare alleles. Conversely, the arms of chromsome 2 are depleted of the medium-frequency alleles and enriched for the rare ones. It also appears that the arms of chromosome 3 are split around the expected peak at MAC=15, into two smaller groups of peaks near MAC~10 and MAC~20. These would correspond to ratios of ~1/6 and 2/6. 
+_Under random assortment, there would be no reason to expect autosomes to have different allele-frequency distributions. However, this isn't the case when the variant sites are grouped by chromsome: the arms of chromosome 3 are enriched in sites with allele frequency ~50% and depleted of the very rare alleles. Conversely, the arms of chromsome 2 are depleted of the medium-frequency alleles and enriched for the rare ones. It also appears that the arms of chromosome 3 are split around the expected peak at MAC=15, into two smaller groups of peaks near MAC~10 and MAC~20. These would correspond to ratios of ~1/6 and 2/6._ 
 
 
 ```{r echo=FALSE}
-ggplot(filteredTbl.biallele)  + geom_freqpoly(aes(x=delta_bp), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
+ggplot(filteredTbl.biallele)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
 ```
 
 
@@ -482,24 +509,27 @@ INDEL size ranged from 6bp deletions to 6bp insertions, with a small but signifi
 
 
 ```{r echo=FALSE}
-insert_truth.Tbl <- filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(ins) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
-prop.test(insert_truth.Tbl$del, insert_truth.Tbl$del+insert_truth.Tbl$ins)
+insert_truth.Tbl <- filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+insert_truth.Tbl <- cbind(insert_truth.Tbl, map2(insert_truth.Tbl$del, insert_truth.Tbl$del+insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
+ 
+kable(insert_truth.Tbl, caption = "Deletion bias in mcm5 Mutants")
+
 ```
 
-
-(A similar result holds if the count by type is scaled by the change in length, for a ratio of bp removed to total bp change).
+revisit this
+_(A similar result holds if the count by type is scaled by the change in length, for a ratio of bp removed to total bp change)._
 
 When constrained to a single MAC value, the basic form of the distribution stays the same but the degree of mutational bias varies, with the highest-MAC variants even having a significant excess of insertions. 
 
 
 ```{r echo=FALSE}
 
-ggplot(filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(mac,ins) %>% summarise(count=n()) %>% spread(ins,count) %>% rename(ins=`TRUE`, del=`FALSE`) %>%  mutate(rat = prop.test(del, ins+del)$estimate, pea=prop.test(del, ins+del)$p.value, peaAdj = p.adjust(pea, method='bonferroni'))) + geom_line(aes(x=mac, y=rat), alpha=0.25) + geom_point(aes(x=mac, y=rat, alpha=peaAdj<0.05)) + geom_hline(yintercept=0.5, linetype='dotted', color='blue', size=1) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Proportion of Deletions", title="Results of Proportion Test for Deletions, by Minor Allele Count", alpha = "significance\n(adjusted)")
+ggplot(filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(mac,ins,group) %>% summarise(count=n()) %>% spread(ins,count) %>% rename(ins=`TRUE`, del=`FALSE`) %>%  mutate(rat = prop.test(del, ins+del)$estimate, pea=prop.test(del, ins+del)$p.value, peaAdj = p.adjust(pea, method='bonferroni'))) + geom_line(aes(x=mac, y=rat, linetype=group), alpha=0.25) + geom_point(aes(x=mac, y=rat, color=group, alpha=peaAdj<0.05)) + geom_hline(yintercept=0.5, linetype='dotted', color='blue', size=1) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Proportion of Deletions", title="Results of Proportion Test for Deletions, by Minor Allele Count", alpha = "significance\n(adjusted)")
 
 ```
 
 
-### Singletons
+### Novel Singletons
 
 Of particular interest in the context of DSB repair are INDELs which appear in exactly one sample as a heterozygote, ie, with an allele count of 1. These make up $`r filteredTbl.biallele %>% filter(mac==1) %>% nrow() `$ of $`r filteredTbl.biallele %>% nrow() `$ total sites  ($`r human_readable_croncher(100*(filteredTbl.biallele %>% filter(mac==1) %>% nrow())/(filteredTbl.biallele %>% nrow()))`$ ) %. As previously discussed, they disproportionately appear on the arms of chromosome 2:
 

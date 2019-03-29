@@ -11,7 +11,11 @@ bibliography: references.bib
 knitr::opts_chunk$set(echo = TRUE)
 
 
-library(readr)
+library("readr")
+library("yaml")
+library("knitr")
+library("tidyverse")
+
 
 ```
 
@@ -20,4 +24,176 @@ From Talia:
 
 >If Danny's progeny are from two types of parental crosses, I guess I would just do analysis on one of those crosses, just to keep it easier.  Find Indels in those progeny, then compare to mcm5a7 progeny.
 
-Ok, going to restrict to w3 and w4
+Ok, going to restrict to w3 and w4.
+
+Maybe redo the samples summary to reflect this?
+
+
+>Males were numbered based on whether their father was homozygous w1118 or Canton-S and the number of their het- erozygous mother. For example, male cs12.3 had a Canton-S father, its mother was female number 12, and it was the third male selected for DNA extraction. Sibling numbers may not be continuous, as males with low DNA concentrations after DNA extraction were not selected for sequencing.
+
+
+```{r include=FALSE}
+
+trammel <- read_yaml("../config.yaml")
+data_sets.df <- plyr::ldply(trammel$data_sets, data.frame)
+
+```
+
+
+```{r echo=FALSE}
+
+
+data_sets.df.sparse <- data_sets.df %>% filter(subgroups=='all') %>% select(-c(subgroups,sra)) %>% distinct() 
+
+data_sets.df.sparse.crossMeta <- data_sets.df.sparse %>% filter(experimental == 'control') %>% select(c(name, source, pedigree, sex))  %>% mutate(tmp=name) %>% separate(tmp, sep="_", into = c("mating","offspring_id"))  %>% mutate(tmp=mating) %>% separate(tmp, sep="[sw]", into=c("A","B"))%>% mutate(tmp=mating) %>% separate(tmp, sep="[0-9]", into=c("A","C")) %>% mutate(mating=case_when(pedigree=='child' ~ mating), father_type=case_when(pedigree=='child' ~ A), mother_id=case_when(pedigree=='child' ~ B) ) %>% select(-c(A,B,C)) %>% mutate(father_type=case_when(father_type=='w' ~ "w1118",father_type=='cs' ~ "CantonS") ) 
+
+
+```
+
+```{r echo=FALSE}
+
+
+data_sets.df.sparse.crossMeta %>% arrange(pedigree, desc(name)) %>% kable(caption="Sequenced Samples from Control Cross")
+```
+```{r echo=FALSE}
+
+data_sets.df.sparse.crossMeta %>% filter(pedigree=='child') %>% group_by(father_type) %>% summarize(count=n()) %>% kable(caption="Control Cross Samples by Cross Type")
+
+```
+
+```{r echo=FALSE}
+
+data_sets.df.sparse.crossMeta %>% filter(pedigree=='child') %>% group_by(father_type, mother_id) %>% summarize(count=n()) %>% kable(caption="Number of Male Offsping Sequenced, by Cross Type and Female ID")
+
+```
+
+It might be good to go ahead and do a YAML for all the flies, with the ones being ignored in a null subgroup. Write a rule to download based on provided SRAs. 
+
+
+
+## 28 March 2019
+
+Ok cool I finally got some slots on Longleaf and the VCFs are building. using temporaries right now (variants called to date).
+
+It occurs to me I may have to go back and rework some reporting rules to reflect the comparison of two different subrgoup variants..........
+
+
+```{bash eval=FALSE}
+$ pwd
+/Users/csoeder/Research/EJgrepper/dev/meta/VCFs
+$ prefix=control
+$ cat control.vs_dm6.bwaUniq.summary | sed -e 's/^/'$prefix'\t/g'> ../all_groups.vs_dm6.bwaUniq.calledVariants.summary
+$ prefix=mutant
+$ cat mutant.vs_dm6.bwaUniq.summary | sed -e 's/^/'$prefix'\t/g' >> ../all_groups.vs_dm6.bwaUniq.calledVariants.summary
+```
+
+
+
+
+```{r include=FALSE}
+refGenomes_summary_df <- read_delim("meta/reference_genomes.summary", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+names(refGenomes_summary_df) <- c("refGenome","measure","value")
+
+```
+```{r echo=FALSE, include=FALSE}
+
+allGroups.vs_dm6.calledVariants.summary <- read_delim("meta/all_groups.vs_dm6.bwaUniq.calledVariants.summary", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+names(allGroups.vs_dm6.calledVariants.summary) <- c("group", "aligner", "variant_type", "count")
+allGroups.vs_dm6.calledVariants.summary$aligner <- as.factor(allGroups.vs_dm6.calledVariants.summary$aligner)
+allGroups.vs_dm6.calledVariants.summary$variant_type <- as.factor(allGroups.vs_dm6.calledVariants.summary$variant_type)
+
+reference_genomes_summaryStats.sprud <- refGenomes_summary_df %>%  spread(measure,value) %>%  select(c(-number_contigs)) 
+
+allGroups.vs_dm6.calledVariants.summary.sprud <- allGroups.vs_dm6.calledVariants.summary %>% spread(variant_type, count) %>%  transmute( aligner=aligner, group = group, INDELs = total_indel_count, SNPs = total_snp_count) 
+
+allGroups.vs_dm6.calledVariants.summary.sprud$total_bp <- reference_genomes_summaryStats.sprud$number_bases
+
+
+allGroups.vs_dm6.calledVariants.summary.sprud %>%  transmute( aligner=aligner, INDELs = INDELs, INDEL_per_kb=1000*INDELs/total_bp, SNPs = SNPs, SNP_per_kb=1000*SNPs/total_bp) %>% mutate(INDELs=human_readable_croncher(SNPs), INDELs=human_readable_croncher(SNPs) ) %>%  kable(caption="Variant Counts and Frequency by Type and Group", digits=1 )
+```
+
+
+
+```{r echo=FALSE, include=FALSE}
+mutant.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/mutant.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+mutant.calledVariants.bwaUniq.lmiss$group <- "mutant"
+
+control.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/control.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+control.calledVariants.bwaUniq.lmiss$group <- "control"
+
+allGroups.calledVariants.lmiss <- rbind(control.calledVariants.bwaUniq.lmiss, mutant.calledVariants.bwaUniq.lmiss) %>% select(c(group, N_MISS, N_DATA)) %>%  mutate(group=as.factor(group), N_PRES=floor(N_DATA/2))
+
+```
+
+This is a little different than before; uses the callable chromosome number instead of the sample count (since the two VCFs could conceivably have different sample numbers) and rounds down. 
+
+
+```{r echo=FALSE}
+
+nsamps <- max(allGroups.calledVariants.lmiss$N_PRES)
+
+ggplot(allGroups.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=group, color=group), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
+```
+
+## 29 March 2019
+
+Ok cool VCFs built and summarized. 
+
+
+Ugh, geom_text + filter apparently fails with a " Aesthetics must either be length one, or the same length as the data" when the filter results are empty
+
+```{r eval=FALSE}
+
+mutant.calledVariants.imiss <- read_delim("meta/VCFs/mutant.vs_dm6.bwaUniq.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+mutant.calledVariants.imiss$group <- "mutant"
+
+control.calledVariants.imiss <- read_delim("meta/VCFs/control.vs_dm6.bwaUniq.summary.imiss", "\t", escape_double = FALSE, trim_ws = TRUE)
+control.calledVariants.imiss$group <- "control"
+
+
+allGroups.calledVariants.imiss <- rbind(control.calledVariants.imiss, mutant.calledVariants.imiss)  %>%  mutate(name=as.factor(INDV), group=as.factor(group), N_PRES=N_DATA-N_MISS) %>% select(c( name, N_MISS, N_PRES, F_MISS,group))
+
+
+```
+
+
+```{r eval=FALSE}
+
+
+allGroups.imiss.augmented <- inner_join(allGroups.calledVariants.imiss, all_alignments %>%  filter(measure=='total_breadth') %>% filter(aligner=="bwaUniq") %>% select(c(sample,value)) %>% rename(breadth=value) %>% mutate(breadth = 100*breadth), by=c("name"="sample"))
+
+allGroups.imiss.augmented <-inner_join(allGroups.imiss.augmented, all_alignments %>%  filter(measure=='avg_depth') %>% filter(aligner=="bwaUniq") %>% select(c(sample,value)) %>% rename(depth=value), by=c("name"="sample"))
+
+allGroups.imiss.augmented <- allGroups.imiss.augmented %>%  gather(breadth:depth, key="measure", value="value")
+
+```
+
+
+```{r eval=FALSE} 
+ggplot(allGroups.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=group, shape=group)) + facet_grid(.~measure, scales="free_x") + theme_clear() + labs(x="", y="Fraction of Sites Callable", title="Jointly Called Variants Callable per Sample,\n by Breadth and Depth of Coverage")
+
+```
+
+
+So with the reporting out of the way, onto analysis of the variants....... 
+
+Rewriting the Winnower rule to preserve the filtered VCF, then run allele count, such that the VCF can then be used for a Novelist rule to remove sites that are variable in the parents. 
+
+oh cool adventures in purr and broom! use map_df to specify a data frame output so that the columns of the glanced stat test can be manipluated dplyr-style:
+
+
+```{r eval=FALSE}
+insert_truth.Tbl <- filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+
+insert_truth.Tbl <- cbind(insert_truth.Tbl, map2(insert_truth.Tbl$del, insert_truth.Tbl$del+insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
+```
+
+
+
+
+
+
+

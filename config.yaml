@@ -319,66 +319,1091 @@ data_sets:
       sra: [SRR2044312]
       pedigree: parent
       sex: M
-    - name: w5_16
+
+
+
+
+
+
+
+    - name:  w11_1
+      paired:  True
+      path:  FASTQ/control/w11_1/
+      readsfile1:  w11_1.R1.fq
+      readsfile2:  w11_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069086,SRR3069087,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_10
+      paired:  True
+      path:  FASTQ/control/w11_10/
+      readsfile1:  w11_10.R1.fq
+      readsfile2:  w11_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069102,SRR3069103,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_11
+      paired:  True
+      path:  FASTQ/control/w11_11/
+      readsfile1:  w11_11.R1.fq
+      readsfile2:  w11_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069104,SRR3069105,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_12
+      paired:  True
+      path:  FASTQ/control/w11_12/
+      readsfile1:  w11_12.R1.fq
+      readsfile2:  w11_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069106,SRR3069107,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_13
+      paired:  True
+      path:  FASTQ/control/w11_13/
+      readsfile1:  w11_13.R1.fq
+      readsfile2:  w11_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069108,SRR3069109,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_2
+      paired:  True
+      path:  FASTQ/control/w11_2/
+      readsfile1:  w11_2.R1.fq
+      readsfile2:  w11_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069088,SRR3069089,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_3
+      paired:  True
+      path:  FASTQ/control/w11_3/
+      readsfile1:  w11_3.R1.fq
+      readsfile2:  w11_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069090,SRR3069091,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_4
+      paired:  True
+      path:  FASTQ/control/w11_4/
+      readsfile1:  w11_4.R1.fq
+      readsfile2:  w11_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069092,SRR3069093,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_5
+      paired:  True
+      path:  FASTQ/control/w11_5/
+      readsfile1:  w11_5.R1.fq
+      readsfile2:  w11_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069094,SRR3069095,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_6
+      paired:  True
+      path:  FASTQ/control/w11_6/
+      readsfile1:  w11_6.R1.fq
+      readsfile2:  w11_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069096,SRR3069097,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_7
+      paired:  True
+      path:  FASTQ/control/w11_7/
+      readsfile1:  w11_7.R1.fq
+      readsfile2:  w11_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069098,SRR3069099,]
+      pedigree:  child
+      sex:  M
+    - name:  w11_8
+      paired:  True
+      path:  FASTQ/control/w11_8/
+      readsfile1:  w11_8.R1.fq
+      readsfile2:  w11_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069100,SRR3069101,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_1
+      paired:  True
+      path:  FASTQ/control/w12_1/
+      readsfile1:  w12_1.R1.fq
+      readsfile2:  w12_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069110,SRR3069111,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_10
+      paired:  True
+      path:  FASTQ/control/w12_10/
+      readsfile1:  w12_10.R1.fq
+      readsfile2:  w12_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069126,SRR3069127,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_11
+      paired:  True
+      path:  FASTQ/control/w12_11/
+      readsfile1:  w12_11.R1.fq
+      readsfile2:  w12_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069128,SRR3069129,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_12
+      paired:  True
+      path:  FASTQ/control/w12_12/
+      readsfile1:  w12_12.R1.fq
+      readsfile2:  w12_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069130,SRR3069131,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_13
+      paired:  True
+      path:  FASTQ/control/w12_13/
+      readsfile1:  w12_13.R1.fq
+      readsfile2:  w12_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069132,SRR3069133,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_2
+      paired:  True
+      path:  FASTQ/control/w12_2/
+      readsfile1:  w12_2.R1.fq
+      readsfile2:  w12_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069112,SRR3069113,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_3
+      paired:  True
+      path:  FASTQ/control/w12_3/
+      readsfile1:  w12_3.R1.fq
+      readsfile2:  w12_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069114,SRR3069115,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_4
+      paired:  True
+      path:  FASTQ/control/w12_4/
+      readsfile1:  w12_4.R1.fq
+      readsfile2:  w12_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069116,SRR3069117,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_5
+      paired:  True
+      path:  FASTQ/control/w12_5/
+      readsfile1:  w12_5.R1.fq
+      readsfile2:  w12_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069118,SRR3069119,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_6
+      paired:  True
+      path:  FASTQ/control/w12_6/
+      readsfile1:  w12_6.R1.fq
+      readsfile2:  w12_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069120,SRR3069121,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_7
+      paired:  True
+      path:  FASTQ/control/w12_7/
+      readsfile1:  w12_7.R1.fq
+      readsfile2:  w12_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069122,SRR3069123,]
+      pedigree:  child
+      sex:  M
+    - name:  w12_9
+      paired:  True
+      path:  FASTQ/control/w12_9/
+      readsfile1:  w12_9.R1.fq
+      readsfile2:  w12_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069124,SRR3069125,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_1
+      paired:  True
+      path:  FASTQ/control/w13_1/
+      readsfile1:  w13_1.R1.fq
+      readsfile2:  w13_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069134,SRR3069135,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_10
+      paired:  True
+      path:  FASTQ/control/w13_10/
+      readsfile1:  w13_10.R1.fq
+      readsfile2:  w13_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069150,SRR3069151,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_11
+      paired:  True
+      path:  FASTQ/control/w13_11/
+      readsfile1:  w13_11.R1.fq
+      readsfile2:  w13_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069152,SRR3069153,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_12
+      paired:  True
+      path:  FASTQ/control/w13_12/
+      readsfile1:  w13_12.R1.fq
+      readsfile2:  w13_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069154,SRR3069155,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_13
+      paired:  True
+      path:  FASTQ/control/w13_13/
+      readsfile1:  w13_13.R1.fq
+      readsfile2:  w13_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069156,SRR3069157,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_2
+      paired:  True
+      path:  FASTQ/control/w13_2/
+      readsfile1:  w13_2.R1.fq
+      readsfile2:  w13_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069136,SRR3069137,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_4
+      paired:  True
+      path:  FASTQ/control/w13_4/
+      readsfile1:  w13_4.R1.fq
+      readsfile2:  w13_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069138,SRR3069139,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_5
+      paired:  True
+      path:  FASTQ/control/w13_5/
+      readsfile1:  w13_5.R1.fq
+      readsfile2:  w13_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069140,SRR3069141,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_6
+      paired:  True
+      path:  FASTQ/control/w13_6/
+      readsfile1:  w13_6.R1.fq
+      readsfile2:  w13_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069142,SRR3069143,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_7
+      paired:  True
+      path:  FASTQ/control/w13_7/
+      readsfile1:  w13_7.R1.fq
+      readsfile2:  w13_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069144,SRR3069145,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_8
+      paired:  True
+      path:  FASTQ/control/w13_8/
+      readsfile1:  w13_8.R1.fq
+      readsfile2:  w13_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069146,SRR3069147,]
+      pedigree:  child
+      sex:  M
+    - name:  w13_9
+      paired:  True
+      path:  FASTQ/control/w13_9/
+      readsfile1:  w13_9.R1.fq
+      readsfile2:  w13_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069148,SRR3069149,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_1
+      paired:  True
+      path:  FASTQ/control/w15_1/
+      readsfile1:  w15_1.R1.fq
+      readsfile2:  w15_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069158,SRR3069159,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_10
+      paired:  True
+      path:  FASTQ/control/w15_10/
+      readsfile1:  w15_10.R1.fq
+      readsfile2:  w15_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069176,SRR3069177,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_11
+      paired:  True
+      path:  FASTQ/control/w15_11/
+      readsfile1:  w15_11.R1.fq
+      readsfile2:  w15_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069178,SRR3069179,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_12
+      paired:  True
+      path:  FASTQ/control/w15_12/
+      readsfile1:  w15_12.R1.fq
+      readsfile2:  w15_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069180,SRR3069181,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_13
+      paired:  True
+      path:  FASTQ/control/w15_13/
+      readsfile1:  w15_13.R1.fq
+      readsfile2:  w15_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069182,SRR3069183,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_2
+      paired:  True
+      path:  FASTQ/control/w15_2/
+      readsfile1:  w15_2.R1.fq
+      readsfile2:  w15_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069160,SRR3069161,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_3
+      paired:  True
+      path:  FASTQ/control/w15_3/
+      readsfile1:  w15_3.R1.fq
+      readsfile2:  w15_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069162,SRR3069163,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_4
+      paired:  True
+      path:  FASTQ/control/w15_4/
+      readsfile1:  w15_4.R1.fq
+      readsfile2:  w15_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069164,SRR3069165,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_5
+      paired:  True
+      path:  FASTQ/control/w15_5/
+      readsfile1:  w15_5.R1.fq
+      readsfile2:  w15_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069166,SRR3069167,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_6
+      paired:  True
+      path:  FASTQ/control/w15_6/
+      readsfile1:  w15_6.R1.fq
+      readsfile2:  w15_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069168,SRR3069169,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_7
+      paired:  True
+      path:  FASTQ/control/w15_7/
+      readsfile1:  w15_7.R1.fq
+      readsfile2:  w15_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069170,SRR3069171,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_8
+      paired:  True
+      path:  FASTQ/control/w15_8/
+      readsfile1:  w15_8.R1.fq
+      readsfile2:  w15_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069172,SRR3069173,]
+      pedigree:  child
+      sex:  M
+    - name:  w15_9
+      paired:  True
+      path:  FASTQ/control/w15_9/
+      readsfile1:  w15_9.R1.fq
+      readsfile2:  w15_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069174,SRR3069175,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_1
+      paired:  True
+      path:  FASTQ/controls/w3_1/
+      readsfile1:  w3_1.R1.fq
+      readsfile2:  w3_1.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069184,SRR3069185,SRR3069186,SRR3069187,]
+      pedigree:  child
+      sex:  M 
+    - name:  w3_11
+      paired:  True
+      path:  FASTQ/controls/w3_11/
+      readsfile1:  w3_11.R1.fq
+      readsfile2:  w3_11.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069208,SRR3069209,SRR3069210,SRR3069211,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_12
+      paired:  True
+      path:  FASTQ/controls/w3_12/
+      readsfile1:  w3_12.R1.fq
+      readsfile2:  w3_12.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069212,SRR3069213,SRR3069214,SRR3069215,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_13
+      paired:  True
+      path:  FASTQ/controls/w3_13/
+      readsfile1:  w3_13.R1.fq
+      readsfile2:  w3_13.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069216,SRR3069217,SRR3069218,SRR3069219,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_14
+      paired:  True
+      path:  FASTQ/controls/w3_14/
+      readsfile1:  w3_14.R1.fq
+      readsfile2:  w3_14.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069220,SRR3069221,SRR3069222,SRR3069223,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_15
+      paired:  True
+      path:  FASTQ/controls/w3_15/
+      readsfile1:  w3_15.R1.fq
+      readsfile2:  w3_15.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069224,SRR3069225,SRR3069226,SRR3069227,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_16
+      paired:  True
+      path:  FASTQ/controls/w3_16/
+      readsfile1:  w3_16.R1.fq
+      readsfile2:  w3_16.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069228,SRR3069229,SRR3069230,SRR3069231,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_17
+      paired:  True
+      path:  FASTQ/controls/w3_17/
+      readsfile1:  w3_17.R1.fq
+      readsfile2:  w3_17.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069232,SRR3069233,SRR3069234,SRR3069235,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_18
+      paired:  True
+      path:  FASTQ/controls/w3_18/
+      readsfile1:  w3_18.R1.fq
+      readsfile2:  w3_18.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069236,SRR3069237,SRR3069238,SRR3069239,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_21
+      paired:  True
+      path:  FASTQ/controls/w3_21/
+      readsfile1:  w3_21.R1.fq
+      readsfile2:  w3_21.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069240,SRR3069241,SRR3069242,SRR3069243,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_24
+      paired:  True
+      path:  FASTQ/controls/w3_24/
+      readsfile1:  w3_24.R1.fq
+      readsfile2:  w3_24.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069244,SRR3069245,SRR3069246,SRR3069247,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_25
+      paired:  True
+      path:  FASTQ/controls/w3_25/
+      readsfile1:  w3_25.R1.fq
+      readsfile2:  w3_25.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069248,SRR3069249,SRR3069250,SRR3069251,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_26
+      paired:  True
+      path:  FASTQ/controls/w3_26/
+      readsfile1:  w3_26.R1.fq
+      readsfile2:  w3_26.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069252,SRR3069253,SRR3069254,SRR3069255,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_4
+      paired:  True
+      path:  FASTQ/controls/w3_4/
+      readsfile1:  w3_4.R1.fq
+      readsfile2:  w3_4.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069188,SRR3069189,SRR3069190,SRR3069191,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_5
+      paired:  True
+      path:  FASTQ/controls/w3_5/
+      readsfile1:  w3_5.R1.fq
+      readsfile2:  w3_5.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069192,SRR3069193,SRR3069194,SRR3069195,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_6
+      paired:  True
+      path:  FASTQ/controls/w3_6/
+      readsfile1:  w3_6.R1.fq
+      readsfile2:  w3_6.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069196,SRR3069197,SRR3069198,SRR3069199,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_8
+      paired:  True
+      path:  FASTQ/controls/w3_8/
+      readsfile1:  w3_8.R1.fq
+      readsfile2:  w3_8.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069200,SRR3069201,SRR3069202,SRR3069203,]
+      pedigree:  child
+      sex:  M
+    - name:  w3_9
+      paired:  True
+      path:  FASTQ/controls/w3_9/
+      readsfile1:  w3_9.R1.fq
+      readsfile2:  w3_9.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069204,SRR3069205,SRR3069206,SRR3069207,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_1
+      paired:  True
+      path:  FASTQ/controls/w4_1/
+      readsfile1:  w4_1.R1.fq
+      readsfile2:  w4_1.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069256,SRR3069257,SRR3069258,SRR3069259,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_11
+      paired:  True
+      path:  FASTQ/controls/w4_11/
+      readsfile1:  w4_11.R1.fq
+      readsfile2:  w4_11.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069292,SRR3069293,SRR3069294,SRR3069295,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_12
+      paired:  True
+      path:  FASTQ/controls/w4_12/
+      readsfile1:  w4_12.R1.fq
+      readsfile2:  w4_12.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069296,SRR3069297,SRR3069298,SRR3069299,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_13
+      paired:  True
+      path:  FASTQ/controls/w4_13/
+      readsfile1:  w4_13.R1.fq
+      readsfile2:  w4_13.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069300,SRR3069301,SRR3069302,SRR3069303,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_15
+      paired:  True
+      path:  FASTQ/controls/w4_15/
+      readsfile1:  w4_15.R1.fq
+      readsfile2:  w4_15.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069304,SRR3069305,SRR3069306,SRR3069307,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_16
+      paired:  True
+      path:  FASTQ/controls/w4_16/
+      readsfile1:  w4_16.R1.fq
+      readsfile2:  w4_16.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069308,SRR3069309,SRR3069310,SRR3069311,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_17
+      paired:  True
+      path:  FASTQ/controls/w4_17/
+      readsfile1:  w4_17.R1.fq
+      readsfile2:  w4_17.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069312,SRR3069313,SRR3069314,SRR3069315,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_2
       paired: True
-      path: FASTQ/controls/w5_16/
-      readsfile1: w5_16.R1.fq
-      readsfile2: w5_16.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069372,SRR3069373,SRR3069374,SRR3069375,]
-      pedigree: child
-    - name: w15_9
-      paired: True
-      path: FASTQ/controls/w15_9/
-      readsfile1: w15_9.R1.fq
-      readsfile2: w15_9.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069174,SRR3069175,]
-      pedigree: child
-    - name: w4_8
-      paired: True
-      path: FASTQ/controls/w4_8/
-      readsfile1: w4_8.R1.fq
-      readsfile2: w4_8.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069284,SRR3069285,SRR3069286,SRR3069287,]
-      pedigree: child
-    - name: cs2_6
-      paired: True
-      path: FASTQ/controls/cs2_6/
-      readsfile1: cs2_6.R1.fq
-      readsfile2: cs2_6.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3068942,SRR3068943,SRR3068944,SRR3068945,]
-      pedigree: child
-    - name: w4_17
-      paired: True
-      path: FASTQ/controls/w4_17/
-      readsfile1: w4_17.R1.fq
-      readsfile2: w4_17.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069312,SRR3069313,SRR3069314,SRR3069315,]
-      pedigree: child
-    - name: w3_12
-      paired: True
-      path: FASTQ/controls/w3_12/
-      readsfile1: w3_12.R1.fq
-      readsfile2: w3_12.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069212,SRR3069213,SRR3069214,SRR3069215,]
-      pedigree: child
+      path:  FASTQ/controls/w4_2/
+      readsfile1:  w4_2.R1.fq
+      readsfile2:  w4_2.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069260,SRR3069261,SRR3069262,SRR3069263,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_3
+      paired:  True
+      path:  FASTQ/controls/w4_3/
+      readsfile1:  w4_3.R1.fq
+      readsfile2:  w4_3.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069264,SRR3069265,SRR3069266,SRR3069267,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_4
+      paired:  True
+      path:  FASTQ/controls/w4_4/
+      readsfile1:  w4_4.R1.fq
+      readsfile2:  w4_4.R2.fq
+      experimental:  control
+      source:  danny
+      subgroups:  [all,control]
+      sra:  [SRR3069268,SRR3069269,SRR3069270,SRR3069271,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_5
+      paired:  True
+      path:  FASTQ/control/w4_5/
+      readsfile1:  w4_5.R1.fq
+      readsfile2:  w4_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069272,SRR3069273,SRR3069274,SRR3069275,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_6
+      paired:  True
+      path:  FASTQ/control/w4_6/
+      readsfile1:  w4_6.R1.fq
+      readsfile2:  w4_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069276,SRR3069277,SRR3069278,SRR3069279,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_7
+      paired:  True
+      path:  FASTQ/control/w4_7/
+      readsfile1:  w4_7.R1.fq
+      readsfile2:  w4_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069280,SRR3069281,SRR3069282,SRR3069283,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_8
+      paired:  True
+      path:  FASTQ/control/w4_8/
+      readsfile1:  w4_8.R1.fq
+      readsfile2:  w4_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069284,SRR3069285,SRR3069286,SRR3069287,]
+      pedigree:  child
+      sex:  M
+    - name:  w4_9
+      paired:  True
+      path:  FASTQ/control/w4_9/
+      readsfile1:  w4_9.R1.fq
+      readsfile2:  w4_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069288,SRR3069289,SRR3069290,SRR3069291,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_1
+      paired:  True
+      path:  FASTQ/control/w5_1/
+      readsfile1:  w5_1.R1.fq
+      readsfile2:  w5_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069316,SRR3069317,SRR3069318,SRR3069319,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_11
+      paired:  True
+      path:  FASTQ/control/w5_11/
+      readsfile1:  w5_11.R1.fq
+      readsfile2:  w5_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069352,SRR3069353,SRR3069354,SRR3069355,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_12
+      paired:  True
+      path:  FASTQ/control/w5_12/
+      readsfile1:  w5_12.R1.fq
+      readsfile2:  w5_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069356,SRR3069357,SRR3069358,SRR3069359,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_13
+      paired:  True
+      path:  FASTQ/control/w5_13/
+      readsfile1:  w5_13.R1.fq
+      readsfile2:  w5_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069360,SRR3069361,SRR3069362,SRR3069363,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_14
+      paired:  True
+      path:  FASTQ/control/w5_14/
+      readsfile1:  w5_14.R1.fq
+      readsfile2:  w5_14.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069364,SRR3069365,SRR3069366,SRR3069367,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_15
+      paired:  True
+      path:  FASTQ/control/w5_15/
+      readsfile1:  w5_15.R1.fq
+      readsfile2:  w5_15.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069368,SRR3069369,SRR3069370,SRR3069371,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_16
+      paired:  True
+      path:  FASTQ/control/w5_16/
+      readsfile1:  w5_16.R1.fq
+      readsfile2:  w5_16.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069372,SRR3069373,SRR3069374,SRR3069375,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_17
+      paired:  True
+      path:  FASTQ/control/w5_17/
+      readsfile1:  w5_17.R1.fq
+      readsfile2:  w5_17.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069376,SRR3069377,SRR3069378,SRR3069379,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_2
+      paired:  True
+      path:  FASTQ/control/w5_2/
+      readsfile1:  w5_2.R1.fq
+      readsfile2:  w5_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069320,SRR3069321,SRR3069322,SRR3069323,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_3
+      paired:  True
+      path:  FASTQ/control/w5_3/
+      readsfile1:  w5_3.R1.fq
+      readsfile2:  w5_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069324,SRR3069325,SRR3069326,SRR3069327,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_4
+      paired:  True
+      path:  FASTQ/control/w5_4/
+      readsfile1:  w5_4.R1.fq
+      readsfile2:  w5_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069328,SRR3069329,SRR3069330,SRR3069331,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_5
+      paired:  True
+      path:  FASTQ/control/w5_5/
+      readsfile1:  w5_5.R1.fq
+      readsfile2:  w5_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069332,SRR3069333,SRR3069334,SRR3069335,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_6
+      paired:  True
+      path:  FASTQ/control/w5_6/
+      readsfile1:  w5_6.R1.fq
+      readsfile2:  w5_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069336,SRR3069337,SRR3069338,SRR3069339,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_7
+      paired:  True
+      path:  FASTQ/control/w5_7/
+      readsfile1:  w5_7.R1.fq
+      readsfile2:  w5_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069340,SRR3069341,SRR3069342,SRR3069343,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_8
+      paired:  True
+      path:  FASTQ/control/w5_8/
+      readsfile1:  w5_8.R1.fq
+      readsfile2:  w5_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069344,SRR3069345,SRR3069346,SRR3069347,]
+      pedigree:  child
+      sex:  M
+    - name:  w5_9
+      paired:  True
+      path:  FASTQ/control/w5_9/
+      readsfile1:  w5_9.R1.fq
+      readsfile2:  w5_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069348,SRR3069349,SRR3069350,SRR3069351,]
+      pedigree:  child
+      sex:  M
     - name: cs12_5
       paired: True
       path: FASTQ/controls/cs12_5/
@@ -386,226 +1411,1088 @@ data_sets:
       readsfile2: cs12_5.R2.fq
       experimental: control
       source: danny
-      subgroups: [all,control]
+      subgroups: [none]
       sra: [SRR3068832,SRR3068833,]
       pedigree: child
-    - name: w4_3
-      paired: True
-      path: FASTQ/controls/w4_3/
-      readsfile1: w4_3.R1.fq
-      readsfile2: w4_3.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069264,SRR3069265,SRR3069266,SRR3069267,]
-      pedigree: child
-    - name: w15_8
-      paired: True
-      path: FASTQ/controls/w15_8/
-      readsfile1: w15_8.R1.fq
-      readsfile2: w15_8.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069172,SRR3069173,]
-      pedigree: child
-    - name: w13_13
-      paired: True
-      path: FASTQ/controls/w13_13/
-      readsfile1: w13_13.R1.fq
-      readsfile2: w13_13.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069156,SRR3069157,]
-      pedigree: child
-    - name: w5_15
-      paired: True
-      path: FASTQ/controls/w5_15/
-      readsfile1: w5_15.R1.fq
-      readsfile2: w5_15.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069368,SRR3069369,SRR3069370,SRR3069371,]
-      pedigree: child
-    - name: w12_7
-      paired: True
-      path: FASTQ/controls/w12_7/
-      readsfile1: w12_7.R1.fq
-      readsfile2: w12_7.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069122,SRR3069123,]
-      pedigree: child
-    - name: w3_24
-      paired: True
-      path: FASTQ/controls/w3_24/
-      readsfile1: w3_24.R1.fq
-      readsfile2: w3_24.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069244,SRR3069245,SRR3069246,SRR3069247,]
-      pedigree: child
-    - name: w4_7
-      paired: True
-      path: FASTQ/controls/w4_7/
-      readsfile1: w4_7.R1.fq
-      readsfile2: w4_7.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069280,SRR3069281,SRR3069282,SRR3069283,]
-      pedigree: child
-    - name: w11_13
-      paired: True
-      path: FASTQ/controls/w11_13/
-      readsfile1: w11_13.R1.fq
-      readsfile2: w11_13.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069108,SRR3069109,]
-      pedigree: child
-    - name: w12_1
-      paired: True
-      path: FASTQ/controls/w12_1/
-      readsfile1: w12_1.R1.fq
-      readsfile2: w12_1.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069110,SRR3069111,]
-      pedigree: child
-    - name: w12_12
-      paired: True
-      path: FASTQ/controls/w12_12/
-      readsfile1: w12_12.R1.fq
-      readsfile2: w12_12.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069130,SRR3069131,]
-      pedigree: child
-    - name: w4_6
-      paired: True
-      path: FASTQ/controls/w4_6/
-      readsfile1: w4_6.R1.fq
-      readsfile2: w4_6.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069276,SRR3069277,SRR3069278,SRR3069279,]
-      pedigree: child
-    - name: w3_16
-      paired: True
-      path: FASTQ/controls/w3_16/
-      readsfile1: w3_16.R1.fq
-      readsfile2: w3_16.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069228,SRR3069229,SRR3069230,SRR3069231,]
-      pedigree: child
-    - name: w15_6
-      paired: True
-      path: FASTQ/controls/w15_6/
-      readsfile1: w15_6.R1.fq
-      readsfile2: w15_6.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069168,SRR3069169,]
-      pedigree: child
-    - name: cs8_8
-      paired: True
-      path: FASTQ/controls/cs8_8/
-      readsfile1: cs8_8.R1.fq
-      readsfile2: cs8_8.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069078,SRR3069079,SRR3069080,SRR3069081,]
-      pedigree: child
-    - name: w13_1
-      paired: True
-      path: FASTQ/controls/w13_1/
-      readsfile1: w13_1.R1.fq
-      readsfile2: w13_1.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069134,SRR3069135,]
-      pedigree: child
-    - name: w12_5
-      paired: True
-      path: FASTQ/controls/w12_5/
-      readsfile1: w12_5.R1.fq
-      readsfile2: w12_5.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069118,SRR3069119,]
-      pedigree: child
-    - name: w5_17
-      paired: True
-      path: FASTQ/controls/w5_17/
-      readsfile1: w5_17.R1.fq
-      readsfile2: w5_17.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069376,SRR3069377,SRR3069378,SRR3069379,]
-      pedigree: child 
-    - name: w15_7
-      paired: True
-      path: FASTQ/controls/w15_7/
-      readsfile1: w15_7.R1.fq
-      readsfile2: w15_7.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069170,SRR3069171,]
-      pedigree: child
-    - name: cs12_3
-      paired: True
-      path: FASTQ/controls/cs12_3/
-      readsfile1: cs12_3.R1.fq
-      readsfile2: cs12_3.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3068828,SRR3068829,]
-      pedigree: child
-    - name: cs2_7
-      paired: True
-      path: FASTQ/controls/cs2_7/
-      readsfile1: cs2_7.R1.fq
-      readsfile2: cs2_7.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3068946,SRR3068947,SRR3068948,SRR3068949,]
-      pedigree: child 
-    - name: w13_4
-      paired: True
-      path: FASTQ/controls/w13_4/
-      readsfile1: w13_4.R1.fq
-      readsfile2: w13_4.R2.fq
-      experimental: control
-      source: danny
-      subgroups: [all,control]
-      sra: [SRR3069138,SRR3069139,]
-      pedigree: child
- 
-
-
-
-
-
-
+      sex: M 
+    - name:  cs1_1
+      paired:  True
+      path:  FASTQ/control/cs1_1/
+      readsfile1:  cs1_1.R1.fq
+      readsfile2:  cs1_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068792,SRR3068793,SRR3068794,SRR3068795,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_2
+      paired:  True
+      path:  FASTQ/control/cs1_2/
+      readsfile1:  cs1_2.R1.fq
+      readsfile2:  cs1_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068796,SRR3068797,SRR3068798,SRR3068799,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_3
+      paired:  True
+      path:  FASTQ/control/cs1_3/
+      readsfile1:  cs1_3.R1.fq
+      readsfile2:  cs1_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068800,SRR3068801,SRR3068802,SRR3068803,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_4
+      paired:  True
+      path:  FASTQ/control/cs1_4/
+      readsfile1:  cs1_4.R1.fq
+      readsfile2:  cs1_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068804,SRR3068805,SRR3068806,SRR3068807,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_5
+      paired:  True
+      path:  FASTQ/control/cs1_5/
+      readsfile1:  cs1_5.R1.fq
+      readsfile2:  cs1_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068808,SRR3068809,SRR3068810,SRR3068811,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_6
+      paired:  True
+      path:  FASTQ/control/cs1_6/
+      readsfile1:  cs1_6.R1.fq
+      readsfile2:  cs1_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068812,SRR3068813,SRR3068814,SRR3068815,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_7
+      paired:  True
+      path:  FASTQ/control/cs1_7/
+      readsfile1:  cs1_7.R1.fq
+      readsfile2:  cs1_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068816,SRR3068817,SRR3068818,SRR3068819,]
+      pedigree:  child
+      sex:  M
+    - name:  cs1_8
+      paired:  True
+      path:  FASTQ/control/cs1_8/
+      readsfile1:  cs1_8.R1.fq
+      readsfile2:  cs1_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068820,SRR3068821,SRR3068822,SRR3068823,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_1
+      paired:  True
+      path:  FASTQ/control/cs12_1/
+      readsfile1:  cs12_1.R1.fq
+      readsfile2:  cs12_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068824,SRR3068825,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_10
+      paired:  True
+      path:  FASTQ/control/cs12_10/
+      readsfile1:  cs12_10.R1.fq
+      readsfile2:  cs12_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068842,SRR3068843,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_11
+      paired:  True
+      path:  FASTQ/control/cs12_11/
+      readsfile1:  cs12_11.R1.fq
+      readsfile2:  cs12_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068844,SRR3068845,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_12
+      paired:  True
+      path:  FASTQ/control/cs12_12/
+      readsfile1:  cs12_12.R1.fq
+      readsfile2:  cs12_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068846,SRR3068847,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_13
+      paired:  True
+      path:  FASTQ/control/cs12_13/
+      readsfile1:  cs12_13.R1.fq
+      readsfile2:  cs12_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068848,SRR3068849,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_14
+      paired:  True
+      path:  FASTQ/control/cs12_14/
+      readsfile1:  cs12_14.R1.fq
+      readsfile2:  cs12_14.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068850,SRR3068851,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_15
+      paired:  True
+      path:  FASTQ/control/cs12_15/
+      readsfile1:  cs12_15.R1.fq
+      readsfile2:  cs12_15.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068852,SRR3068853,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_16
+      paired:  True
+      path:  FASTQ/control/cs12_16/
+      readsfile1:  cs12_16.R1.fq
+      readsfile2:  cs12_16.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068854,SRR3068855,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_17
+      paired:  True
+      path:  FASTQ/control/cs12_17/
+      readsfile1:  cs12_17.R1.fq
+      readsfile2:  cs12_17.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068856,SRR3068857,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_18
+      paired:  True
+      path:  FASTQ/control/cs12_18/
+      readsfile1:  cs12_18.R1.fq
+      readsfile2:  cs12_18.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068858,SRR3068859,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_2
+      paired:  True
+      path:  FASTQ/control/cs12_2/
+      readsfile1:  cs12_2.R1.fq
+      readsfile2:  cs12_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068826,SRR3068827,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_3
+      paired:  True
+      path:  FASTQ/control/cs12_3/
+      readsfile1:  cs12_3.R1.fq
+      readsfile2:  cs12_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068828,SRR3068829,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_4
+      paired:  True
+      path:  FASTQ/control/cs12_4/
+      readsfile1:  cs12_4.R1.fq
+      readsfile2:  cs12_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068830,SRR3068831,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_5
+      paired:  True
+      path:  FASTQ/control/cs12_5/
+      readsfile1:  cs12_5.R1.fq
+      readsfile2:  cs12_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068832,SRR3068833,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_6
+      paired:  True
+      path:  FASTQ/control/cs12_6/
+      readsfile1:  cs12_6.R1.fq
+      readsfile2:  cs12_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068834,SRR3068835,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_7
+      paired:  True
+      path:  FASTQ/control/cs12_7/
+      readsfile1:  cs12_7.R1.fq
+      readsfile2:  cs12_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068836,SRR3068837,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_8
+      paired:  True
+      path:  FASTQ/control/cs12_8/
+      readsfile1:  cs12_8.R1.fq
+      readsfile2:  cs12_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068838,SRR3068839,]
+      pedigree:  child
+      sex:  M
+    - name:  cs12_9
+      paired:  True
+      path:  FASTQ/control/cs12_9/
+      readsfile1:  cs12_9.R1.fq
+      readsfile2:  cs12_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068840,SRR3068841,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_1
+      paired:  True
+      path:  FASTQ/control/cs13_1/
+      readsfile1:  cs13_1.R1.fq
+      readsfile2:  cs13_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068860,SRR3068861,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_10
+      paired:  True
+      path:  FASTQ/control/cs13_10/
+      readsfile1:  cs13_10.R1.fq
+      readsfile2:  cs13_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068878,SRR3068879,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_11
+      paired:  True
+      path:  FASTQ/control/cs13_11/
+      readsfile1:  cs13_11.R1.fq
+      readsfile2:  cs13_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068880,SRR3068881,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_12
+      paired:  True
+      path:  FASTQ/control/cs13_12/
+      readsfile1:  cs13_12.R1.fq
+      readsfile2:  cs13_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068882,SRR3068883,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_13
+      paired:  True
+      path:  FASTQ/control/cs13_13/
+      readsfile1:  cs13_13.R1.fq
+      readsfile2:  cs13_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068884,SRR3068885,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_14
+      paired:  True
+      path:  FASTQ/control/cs13_14/
+      readsfile1:  cs13_14.R1.fq
+      readsfile2:  cs13_14.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068886,SRR3068887,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_15
+      paired:  True
+      path:  FASTQ/control/cs13_15/
+      readsfile1:  cs13_15.R1.fq
+      readsfile2:  cs13_15.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068888,SRR3068889,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_16
+      paired:  True
+      path:  FASTQ/control/cs13_16/
+      readsfile1:  cs13_16.R1.fq
+      readsfile2:  cs13_16.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068890,SRR3068891,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_17
+      paired:  True
+      path:  FASTQ/control/cs13_17/
+      readsfile1:  cs13_17.R1.fq
+      readsfile2:  cs13_17.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068892,SRR3068893,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_18
+      paired:  True
+      path:  FASTQ/control/cs13_18/
+      readsfile1:  cs13_18.R1.fq
+      readsfile2:  cs13_18.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068894,SRR3068895,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_2
+      paired:  True
+      path:  FASTQ/control/cs13_2/
+      readsfile1:  cs13_2.R1.fq
+      readsfile2:  cs13_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068862,SRR3068863,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_3
+      paired:  True
+      path:  FASTQ/control/cs13_3/
+      readsfile1:  cs13_3.R1.fq
+      readsfile2:  cs13_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068864,SRR3068865,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_4
+      paired:  True
+      path:  FASTQ/control/cs13_4/
+      readsfile1:  cs13_4.R1.fq
+      readsfile2:  cs13_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068866,SRR3068867,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_5
+      paired:  True
+      path:  FASTQ/control/cs13_5/
+      readsfile1:  cs13_5.R1.fq
+      readsfile2:  cs13_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068868,SRR3068869,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_6
+      paired:  True
+      path:  FASTQ/control/cs13_6/
+      readsfile1:  cs13_6.R1.fq
+      readsfile2:  cs13_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068870,SRR3068871,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_7
+      paired:  True
+      path:  FASTQ/control/cs13_7/
+      readsfile1:  cs13_7.R1.fq
+      readsfile2:  cs13_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068872,SRR3068873,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_8
+      paired:  True
+      path:  FASTQ/control/cs13_8/
+      readsfile1:  cs13_8.R1.fq
+      readsfile2:  cs13_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068874,SRR3068875,]
+      pedigree:  child
+      sex:  M
+    - name:  cs13_9
+      paired:  True
+      path:  FASTQ/control/cs13_9/
+      readsfile1:  cs13_9.R1.fq
+      readsfile2:  cs13_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068876,SRR3068877,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_1
+      paired:  True
+      path:  FASTQ/control/cs14_1/
+      readsfile1:  cs14_1.R1.fq
+      readsfile2:  cs14_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068896,SRR3068897,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_10
+      paired:  True
+      path:  FASTQ/control/cs14_10/
+      readsfile1:  cs14_10.R1.fq
+      readsfile2:  cs14_10.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068914,SRR3068915,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_11
+      paired:  True
+      path:  FASTQ/control/cs14_11/
+      readsfile1:  cs14_11.R1.fq
+      readsfile2:  cs14_11.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068916,SRR3068917,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_12
+      paired:  True
+      path:  FASTQ/control/cs14_12/
+      readsfile1:  cs14_12.R1.fq
+      readsfile2:  cs14_12.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068918,SRR3068919,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_13
+      paired:  True
+      path:  FASTQ/control/cs14_13/
+      readsfile1:  cs14_13.R1.fq
+      readsfile2:  cs14_13.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068920,SRR3068921,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_2
+      paired:  True
+      path:  FASTQ/control/cs14_2/
+      readsfile1:  cs14_2.R1.fq
+      readsfile2:  cs14_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068898,SRR3068899,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_3
+      paired:  True
+      path:  FASTQ/control/cs14_3/
+      readsfile1:  cs14_3.R1.fq
+      readsfile2:  cs14_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068900,SRR3068901,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_4
+      paired:  True
+      path:  FASTQ/control/cs14_4/
+      readsfile1:  cs14_4.R1.fq
+      readsfile2:  cs14_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068902,SRR3068903,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_5
+      paired:  True
+      path:  FASTQ/control/cs14_5/
+      readsfile1:  cs14_5.R1.fq
+      readsfile2:  cs14_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068904,SRR3068905,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_6
+      paired:  True
+      path:  FASTQ/control/cs14_6/
+      readsfile1:  cs14_6.R1.fq
+      readsfile2:  cs14_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068906,SRR3068907,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_7
+      paired:  True
+      path:  FASTQ/control/cs14_7/
+      readsfile1:  cs14_7.R1.fq
+      readsfile2:  cs14_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068908,SRR3068909,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_8
+      paired:  True
+      path:  FASTQ/control/cs14_8/
+      readsfile1:  cs14_8.R1.fq
+      readsfile2:  cs14_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068910,SRR3068911,]
+      pedigree:  child
+      sex:  M
+    - name:  cs14_9
+      paired:  True
+      path:  FASTQ/control/cs14_9/
+      readsfile1:  cs14_9.R1.fq
+      readsfile2:  cs14_9.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068912,SRR3068913,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_1
+      paired:  True
+      path:  FASTQ/control/cs2_1/
+      readsfile1:  cs2_1.R1.fq
+      readsfile2:  cs2_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068922,SRR3068923,SRR3068924,SRR3068925,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_2
+      paired:  True
+      path:  FASTQ/control/cs2_2/
+      readsfile1:  cs2_2.R1.fq
+      readsfile2:  cs2_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068926,SRR3068927,SRR3068928,SRR3068929,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_3
+      paired:  True
+      path:  FASTQ/control/cs2_3/
+      readsfile1:  cs2_3.R1.fq
+      readsfile2:  cs2_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068930,SRR3068931,SRR3068932,SRR3068933,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_4
+      paired:  True
+      path:  FASTQ/control/cs2_4/
+      readsfile1:  cs2_4.R1.fq
+      readsfile2:  cs2_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068934,SRR3068935,SRR3068936,SRR3068937,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_5
+      paired:  True
+      path:  FASTQ/control/cs2_5/
+      readsfile1:  cs2_5.R1.fq
+      readsfile2:  cs2_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068938,SRR3068939,SRR3068940,SRR3068941,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_6
+      paired:  True
+      path:  FASTQ/control/cs2_6/
+      readsfile1:  cs2_6.R1.fq
+      readsfile2:  cs2_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068942,SRR3068943,SRR3068944,SRR3068945,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_7
+      paired:  True
+      path:  FASTQ/control/cs2_7/
+      readsfile1:  cs2_7.R1.fq
+      readsfile2:  cs2_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068946,SRR3068947,SRR3068948,SRR3068949,]
+      pedigree:  child
+      sex:  M
+    - name:  cs2_8
+      paired:  True
+      path:  FASTQ/control/cs2_8/
+      readsfile1:  cs2_8.R1.fq
+      readsfile2:  cs2_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068950,SRR3068951,SRR3068952,SRR3068953,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_1
+      paired:  True
+      path:  FASTQ/control/cs5_1/
+      readsfile1:  cs5_1.R1.fq
+      readsfile2:  cs5_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068954,SRR3068955,SRR3068956,SRR3068957,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_2
+      paired:  True
+      path:  FASTQ/control/cs5_2/
+      readsfile1:  cs5_2.R1.fq
+      readsfile2:  cs5_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068958,SRR3068959,SRR3068960,SRR3068961,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_3
+      paired:  True
+      path:  FASTQ/control/cs5_3/
+      readsfile1:  cs5_3.R1.fq
+      readsfile2:  cs5_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068962,SRR3068963,SRR3068964,SRR3068965,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_4
+      paired:  True
+      path:  FASTQ/control/cs5_4/
+      readsfile1:  cs5_4.R1.fq
+      readsfile2:  cs5_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068966,SRR3068967,SRR3068968,SRR3068969,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_5
+      paired:  True
+      path:  FASTQ/control/cs5_5/
+      readsfile1:  cs5_5.R1.fq
+      readsfile2:  cs5_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068970,SRR3068971,SRR3068972,SRR3068973,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_6
+      paired:  True
+      path:  FASTQ/control/cs5_6/
+      readsfile1:  cs5_6.R1.fq
+      readsfile2:  cs5_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068974,SRR3068975,SRR3068976,SRR3068977,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_7
+      paired:  True
+      path:  FASTQ/control/cs5_7/
+      readsfile1:  cs5_7.R1.fq
+      readsfile2:  cs5_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068978,SRR3068979,SRR3068980,SRR3068981,]
+      pedigree:  child
+      sex:  M
+    - name:  cs5_8
+      paired:  True
+      path:  FASTQ/control/cs5_8/
+      readsfile1:  cs5_8.R1.fq
+      readsfile2:  cs5_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068982,SRR3068983,SRR3068984,SRR3068985,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_1
+      paired:  True
+      path:  FASTQ/control/cs6_1/
+      readsfile1:  cs6_1.R1.fq
+      readsfile2:  cs6_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068986,SRR3068987,SRR3068988,SRR3068989,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_2
+      paired:  True
+      path:  FASTQ/control/cs6_2/
+      readsfile1:  cs6_2.R1.fq
+      readsfile2:  cs6_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068990,SRR3068991,SRR3068992,SRR3068993,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_3
+      paired:  True
+      path:  FASTQ/control/cs6_3/
+      readsfile1:  cs6_3.R1.fq
+      readsfile2:  cs6_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068994,SRR3068995,SRR3068996,SRR3068997,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_4
+      paired:  True
+      path:  FASTQ/control/cs6_4/
+      readsfile1:  cs6_4.R1.fq
+      readsfile2:  cs6_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3068998,SRR3068999,SRR3069000,SRR3069001,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_5
+      paired:  True
+      path:  FASTQ/control/cs6_5/
+      readsfile1:  cs6_5.R1.fq
+      readsfile2:  cs6_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069002,SRR3069003,SRR3069004,SRR3069005,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_6
+      paired:  True
+      path:  FASTQ/control/cs6_6/
+      readsfile1:  cs6_6.R1.fq
+      readsfile2:  cs6_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069006,SRR3069007,SRR3069008,SRR3069009,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_7
+      paired:  True
+      path:  FASTQ/control/cs6_7/
+      readsfile1:  cs6_7.R1.fq
+      readsfile2:  cs6_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069010,SRR3069011,SRR3069012,SRR3069013,]
+      pedigree:  child
+      sex:  M
+    - name:  cs6_8
+      paired:  True
+      path:  FASTQ/control/cs6_8/
+      readsfile1:  cs6_8.R1.fq
+      readsfile2:  cs6_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069014,SRR3069015,SRR3069016,SRR3069017,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_1
+      paired:  True
+      path:  FASTQ/control/cs7_1/
+      readsfile1:  cs7_1.R1.fq
+      readsfile2:  cs7_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069018,SRR3069019,SRR3069020,SRR3069021,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_2
+      paired:  True
+      path:  FASTQ/control/cs7_2/
+      readsfile1:  cs7_2.R1.fq
+      readsfile2:  cs7_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069022,SRR3069023,SRR3069024,SRR3069025,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_3
+      paired:  True
+      path:  FASTQ/control/cs7_3/
+      readsfile1:  cs7_3.R1.fq
+      readsfile2:  cs7_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069026,SRR3069027,SRR3069028,SRR3069029,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_4
+      paired:  True
+      path:  FASTQ/control/cs7_4/
+      readsfile1:  cs7_4.R1.fq
+      readsfile2:  cs7_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069030,SRR3069031,SRR3069032,SRR3069033,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_5
+      paired:  True
+      path:  FASTQ/control/cs7_5/
+      readsfile1:  cs7_5.R1.fq
+      readsfile2:  cs7_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069034,SRR3069035,SRR3069036,SRR3069037,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_6
+      paired:  True
+      path:  FASTQ/control/cs7_6/
+      readsfile1:  cs7_6.R1.fq
+      readsfile2:  cs7_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069038,SRR3069039,SRR3069040,SRR3069041,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_7
+      paired:  True
+      path:  FASTQ/control/cs7_7/
+      readsfile1:  cs7_7.R1.fq
+      readsfile2:  cs7_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069042,SRR3069043,SRR3069044,SRR3069045,]
+      pedigree:  child
+      sex:  M
+    - name:  cs7_8
+      paired:  True
+      path:  FASTQ/control/cs7_8/
+      readsfile1:  cs7_8.R1.fq
+      readsfile2:  cs7_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069046,SRR3069047,SRR3069048,SRR3069049,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_1
+      paired:  True
+      path:  FASTQ/control/cs8_1/
+      readsfile1:  cs8_1.R1.fq
+      readsfile2:  cs8_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069050,SRR3069051,SRR3069052,SRR3069053,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_2
+      paired:  True
+      path:  FASTQ/control/cs8_2/
+      readsfile1:  cs8_2.R1.fq
+      readsfile2:  cs8_2.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069054,SRR3069055,SRR3069056,SRR3069057,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_3
+      paired:  True
+      path:  FASTQ/control/cs8_3/
+      readsfile1:  cs8_3.R1.fq
+      readsfile2:  cs8_3.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069058,SRR3069059,SRR3069060,SRR3069061,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_4
+      paired:  True
+      path:  FASTQ/control/cs8_4/
+      readsfile1:  cs8_4.R1.fq
+      readsfile2:  cs8_4.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069062,SRR3069063,SRR3069064,SRR3069065,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_5
+      paired:  True
+      path:  FASTQ/control/cs8_5/
+      readsfile1:  cs8_5.R1.fq
+      readsfile2:  cs8_5.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069066,SRR3069067,SRR3069068,SRR3069069,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_6
+      paired:  True
+      path:  FASTQ/control/cs8_6/
+      readsfile1:  cs8_6.R1.fq
+      readsfile2:  cs8_6.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069070,SRR3069071,SRR3069072,SRR3069073,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_7
+      paired:  True
+      path:  FASTQ/control/cs8_7/
+      readsfile1:  cs8_7.R1.fq
+      readsfile2:  cs8_7.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069074,SRR3069075,SRR3069076,SRR3069077,]
+      pedigree:  child
+      sex:  M
+    - name:  cs8_8
+      paired:  True
+      path:  FASTQ/control/cs8_8/
+      readsfile1:  cs8_8.R1.fq
+      readsfile2:  cs8_8.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069078,SRR3069079,SRR3069080,SRR3069081,]
+      pedigree:  child
+      sex:  M
+    - name:  cs9_1
+      paired:  True
+      path:  FASTQ/control/cs9_1/
+      readsfile1:  cs9_1.R1.fq
+      readsfile2:  cs9_1.R2.fq
+      experimental:  controls
+      source:  danny
+      subgroups:  [none]
+      sra:  [SRR3069082,SRR3069083,SRR3069084,SRR3069085,]
+      pedigree:  child
+      sex:  M
 
 reference_genomes:
     - name: dm6
