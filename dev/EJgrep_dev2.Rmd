@@ -99,6 +99,11 @@ names(refGenomes_summary_df) <- c("refGenome","measure","value")
 
 ```
 ```{r echo=FALSE, include=FALSE}
+human_readable_croncher <- function(num_in) {
+	dig <- 3
+	num_out <- formatC(num_in, digits=dig, format='g') %>% as.numeric() %>% sitools::f2si()
+	return(num_out)
+}
 
 allGroups.vs_dm6.calledVariants.summary <- read_delim("meta/all_groups.vs_dm6.bwaUniq.calledVariants.summary", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
 names(allGroups.vs_dm6.calledVariants.summary) <- c("group", "aligner", "variant_type", "count")
@@ -132,6 +137,8 @@ This is a little different than before; uses the callable chromosome number inst
 
 
 ```{r echo=FALSE}
+library("ggbio")
+
 
 nsamps <- max(allGroups.calledVariants.lmiss$N_PRES)
 
@@ -191,7 +198,182 @@ insert_truth.Tbl <- filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by
 insert_truth.Tbl <- cbind(insert_truth.Tbl, map2(insert_truth.Tbl$del, insert_truth.Tbl$del+insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
 ```
 
+## 1 Apr 2019
 
+```{r eval=FALSE}
+ggplot(filteredTbl.biallele) + geom_freqpoly(aes(x=mac, color=group),bins=31) + facet_wrap(chrom~.) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count and Chromosome")
+
+```
+
+
+Adding the qualification to "Novel Singeltons" that parent-derived alleles must get scrubbed.
+
+Currently adding Site Ids by VCF surgery; maybe add them earlier??
+
+Current approach: subset VCF to parent, select sites with parent having >0 alt alleles, kick those out.
+Q1: what if this rule needs to be expanded to multiallelic sites? 
+```{bash eval=FALSE}
+grep "1|1\|0|1"
+```
+vs
+```{bash eval=FALSE}
+grep "[1-9]|[1-9]\|0|[1-9]"
+```
+?
+
+Q2: what if the parent allele is A and the mutant allele is R? (weird back-mutation special case)
+These are r
+
+uh, the vcftools --snp/snps option doesn't seem to be working? I guess just use grep?
+
+
+
+```{r echo=FALSE}
+
+multicolumn_ACloader <- function(filename){
+	
+	max_fields<- count.fields(filename, sep = '\t') %>% max()
+
+	tubb <- read.table(filename, header = FALSE, sep = "\t", fill = TRUE,col.names = paste0("V",seq_len(max_fields)))
+
+	tubb.df <- tubb[1:7]
+
+	names(tubb.df) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+	tubb.df$var_num <- 1
+	
+	for (i in seq(8,max_fields,2)){
+		tubb.df.tmp <- cbind(tubb[1:5], tubb[c(i,i+1)])
+		names(tubb.df.tmp) <- c("site_id", "chrom", "pos", "var_count", "chroms_avail", "allele", "allele_count")
+		tubb.df.tmp$var_num <- i/2-2
+		tubb.df <- rbind(tubb.df, tubb.df.tmp %>% filter(!is.na(allele_count))  )
+	}
+
+	tubb.df <- tubb.df %>% mutate(allele_freq = allele_count/chroms_avail) %>% as_tibble()
+
+	
+	
+		return( tubb.df)
+}
+
+control.novel.counts <- multicolumn_ACloader("analysis/control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.count")
+control.novel.counts$group <- as.factor("control")
+
+
+mutant.novel.counts <- multicolumn_ACloader("analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.count")
+mutant.novel.counts$group <- as.factor("mutant")
+
+
+biallele.novel.counts <- rbind(control.novel.counts, mutant.novel.counts) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+
+biallele.novel.counts.tmp <- biallele.novel.counts %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
+
+biallele.novel.counts <- rbind(biallele.novel.counts.tmp, biallele.novel.counts %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`)) %>% mutate( group=`1_group`) %>%  select(-c(`2_group`))
+
+```
+
+
+
+```{r echo=FALSE}
+ggplot(biallele.novel.counts %>%  group_by(mac, delta_bp,group) %>% summarise(count=n())) + geom_tile(aes(x=mac,y=delta_bp, fill=count)) +facet_grid(group~.) + theme_clear() #+ labs(x="Minor Allele Count (chromosomes)", y="Nucleotides Inserted or Deleted", title="Heatmap of INDEL Count, by Frequency and Size") + scale_fill_gradient(name = "Site Count", trans = "log", breaks = c(1,10,100,1000), labels = c(1,10,100,1000)) + theme( panel.background = element_rect(fill = "black", colour = "black"))
+```
+
+
+
+
+```{r echo=FALSE}
+ggplot(biallele.novel.counts) + geom_freqpoly(aes(x=mac),bins=15, color='black') + geom_freqpoly(aes(x=mac, color=chrom),bins=31) + facet_grid(group~.) + theme_clear() #+ labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count, Chromosome, and Treatment")
+
+```
+```{r eval=FALSE}
+
+biallele.novel.byChrom <- inner_join(biallele.novel.counts %>% group_by(group, chrom) %>% summarise(novel=n()), filteredTbl.biallele %>% group_by(group, chrom) %>% summarize(total=n()), by=c("group"="group", "chrom"="chrom") ) 
+
+biallele.novel.byChrom %>%  mutate(percent=human_readable_croncher( 100*novel/total)) %>%  kable(caption="Hereditarily Novel Biallaeleic INDELs, by Treatment and Chromosome")
+```
+
+
+
+
+
+```{r echo=FALSE}
+ggplot(biallele.novel.counts)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
+```
+
+
+
+```{r eval=FALSE}
+novel.insert_truth.Tbl <- biallele.novel.counts %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+novel.insert_truth.Tbl <- cbind(novel.insert_truth.Tbl, map2(novel.insert_truth.Tbl$del, novel.insert_truth.Tbl$del+novel.insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
+
+kable(novel.insert_truth.Tbl, caption = "Deletion bias in mcm5 Mutants  (Hereditarily Novel)")
+
+```
+
+
+
+
+```{r echo=FALSE}
+
+biallele.novel.counts.singleton <- biallele.novel.counts %>% filter(mac==1) 
+
+biallele.novel.counts.singleton %>% group_by(group, chrom) %>% summarise(novel_singleton=n())
+```
+
+```{r eval=FALSE}
+
+full_join(biallele.novel.byChrom, biallele.novel.counts.singleton %>% group_by(group, chrom) %>% summarise(novel_singleton=n()), by=c("group"="group", "chrom"="chrom")) %>% mutate(novel_singleton=case_when(is.na(novel_singleton) ~0, TRUE ~ as.double( novel_singleton)), percent_novel_singleton =100*novel_singleton/novel)  %>%  kable(caption="Hereditarily Novel, Singleton Biallaeleic INDELs, by Treatment and Chromosome")
+
+```
+
+Fortifying the VCF_Novelist rule
+
+```{bash eval=FALSE}
+
+
+vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --recode --recode-INFO-all --stdout | grep -v "#" | grep -v "1|1\|0|1\|1|0" | cut -f 3 > {input.vcf_in}.hom0.list;
+
+
+
+vcftools --remove-indv DfMcm5 --remove-indv Mcm5-A7 --vcf variants/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.vcf.anc.tmp  --recode --recode-INFO-all  --stdout | grep -v "#" | less
+
+
+
+```
+
+## 2 April 2019
+
+Hmm, looks  like adding the rare ref alleles has dramatically changed the results: Many more novel variants and novel-singleton variants in the control now. (?!)
+
+One possibility: there is residual difference between w3, w4, and w1118. Checking this my comparing the frequencies at novel sites: w3 and w4 would be expected to have little overlap if novel sites are due to 3 vs 4 differences
+
+```{bash eval=FALSE}
+
+vcftools --vcf control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.vcf --indv w3_25 --indv w3_1 --indv w3_12 --indv w3_8 --indv w3_16 --indv w3_14 --indv w3_6 --indv w3_15 --indv w3_24 --indv w3_13 --indv w3_26 --indv w3_5 --indv w3_9 --indv w3_21 --indv w3_4 --indv w3_17 --indv w3_18 --indv w3_11 --freq --stdout | tail -n +2 | tr ":" "\t" | cut -f 1,8 > control.w3.frq
+
+
+vcftools --vcf control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.vcf --indv w4_3 --indv w4_16 --indv w4_4 --indv w4_15 --indv w4_11 --indv w4_17 --indv w4_13 --indv w4_1 --indv w4_2 --indv w4_12 --freq --stdout | tail -n +2 | tr ":" "\t" | cut -f 1,8 > control.w4.frq
+
+paste control.w[34].frq | cut -f 1,2,4 >control.diff.frq
+
+```
+
+```{r echo=FALSE}
+
+control_diff <- read_delim("control.diff.frq", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
+names(control_diff) <- c("chrom","w3","w4")
+control_diff$chrom <- as.factor(control_diff$chrom)
+control_diff$diff <- control_diff$w3 - control_diff$w4
+
+ggplot(control_diff) + geom_point(aes(x=w3, y=w4, color=chrom))
+ggplot(control_diff) + geom_violin(aes(x=chrom, y=diff, color=chrom))
+```
+
+Hmm, no looks like those AFs are pretty well correllated. 
+
+## 3 April 2019
+
+Okay to compromise let's just split the two into a novel and a backmutation file...
 
 
 

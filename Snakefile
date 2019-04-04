@@ -17,6 +17,16 @@ for s in sample_by_name.keys():
 		else:
 			sampname_by_group[g] = [s]
 
+parents_by_group = {g : []  for c in config['data_sets'] for g in c['subgroups'] }
+for s in sample_by_name.keys():
+	ped = sample_by_name[s]['pedigree']
+	if ped == 'parent':
+		for grup in sample_by_name[s]['subgroups']:
+			parents_by_group[grup].append(s)
+for g in parents_by_group.keys():
+	parents_by_group[g] = list(set(parents_by_group[g]))
+
+
 
 def return_file_relpath_by_sampname(wildcards):
 	sampname = wildcards.samplename
@@ -34,6 +44,7 @@ def return_filename_by_sampname(sampname):
 	else:
 		filenames.append(sample_by_name[sampname]['readsfile'])
 	return filenames
+
 
 
 
@@ -386,7 +397,80 @@ rule VCF_winnower:
 		"potatoes for breakfast.... "
 	run:
 		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}""")
-		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | nl -n ln  > {output.alleleCounts_out}""")
+		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.alleleCounts_out}""")
+
+
+
+
+
+rule VCF_novelist:
+	input:
+		vcf_in = "variants/{group}.vs_{meta}.vcf",
+	output:
+		novel_vcf = "variants/{group}.vs_{meta}.novel.vcf",
+		novel_count = "analysis/{group}.vs_{meta}.novel.count",
+		back_vcf = "variants/{group}.vs_{meta}.back.vcf",
+		back_count = "analysis/{group}.vs_{meta}.back.count",
+#		ancestral_vcf= "variants/{group}.vs_{meta}.ancestral.vcf",
+#		ancestral_count= "analysis/{group}.vs_{meta}.ancestral.count",
+	params:
+		runmem_gb=8,
+		runtime="4:00:00",
+		cores=4,
+		#good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4",
+		#dpth_filt = 10,
+		#max_uncalled = 0,
+	message:
+		"potatoes for breakfast.... "
+	run:
+		par_string = " ".join(["--indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
+		nopar_string = " ".join(["--remove-indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
+		# shell("""
+		# 	cat {input.vcf_in} | grep "#" > {input.vcf_in}.anc.tmp;
+		# 	cat {input.vcf_in} | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "rs"$0}}'| paste <(cat {input.vcf_in}| grep -v "#" | cut -f 1,2) - >> {input.vcf_in}.anc.tmp;
+
+		# 	vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --recode --recode-INFO-all --stdout | grep -v "#" | grep "1|1\|0|1\|1|0" | cut -f 3 > {input.vcf_in}.par.list;
+
+		# 	grep "#" {input.vcf_in}.anc.tmp > {output.novel_vcf};
+		# 	grep -v "#" {input.vcf_in}.anc.tmp | grep -v -wFf {input.vcf_in}.par.list >> {output.novel_vcf};
+		# 	vcftools --vcf {output.novel_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.novel_count};
+
+		# 	grep "#" {input.vcf_in}.anc.tmp > {output.ancestral_vcf};
+		# 	grep -v "#" {input.vcf_in}.anc.tmp | grep -wFf {input.vcf_in}.par.list >> {output.ancestral_vcf};
+		# 	vcftools --vcf {output.ancestral_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.ancestral_count};
+			
+		# 	rm {input.vcf_in}.anc.tmp;
+		# 	rm {input.vcf_in}.par.list;
+		# 	""")
+
+		# renamer: (MOVE THIS TO THE VCF CALLER!!!)
+		shell("""cat <(cat {input.vcf_in} | grep "#") <(cat {input.vcf_in} | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "rs"$0}}'| paste <(cat {input.vcf_in}| grep -v "#" | cut -f 1,2) - ) > {input.vcf_in}.anc.tmp;""")
+		#collect all the variant IDs which are 0|0 in both parents
+		shell("""vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --non-ref-ac 0 --max-non-ref-ac 0  --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs0.list;""")
+		# subset the VCF to those sites which are 0|0 in both parents, then to those which also have at least one alt allele in an offspring
+		shell("""cat <( grep "#" {input.vcf_in}.anc.tmp ) <( grep -v "#" {input.vcf_in}.anc.tmp | grep -wFf {input.vcf_in}.rs0.list ) | vcftools --vcf - --non-ref-ac 1 --max-non-ref-af 1.0  --recode --recode-INFO-all --stdout > {output.novel_vcf} """)
+		shell("""vcftools --vcf {output.novel_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.novel_count};""")
+
+
+		# collect variant IDs which are 1|1 in both parents
+		shell("""vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --non-ref-af 1 --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs1.list;""")
+		# subset the VCF to those sites which are 1|1 in both parents, then to those which also have at least one ref allele in an offspring
+		shell("""cat <( grep "#" {input.vcf_in}.anc.tmp ) <( grep -v "#" {input.vcf_in}.anc.tmp | grep -wFf {input.vcf_in}.rs1.list ) | vcftools --vcf - --max-non-ref-af 0.99999  --recode --recode-INFO-all --stdout > {output.back_vcf}""")
+		#shell(""" touch {output.novel_vcf}.1 """)
+		# merge and sort the two kinds of novel vars...
+		#shell("""vcf-concat {output.novel_vcf}.0 {output.novel_vcf}.1 | vcf-sort > {output.novel_vcf}""")
+		#shell("""cp {output.novel_vcf}.0 {output.novel_vcf}""")
+		#tally the allele counts
+		shell("""vcftools --vcf {output.back_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.back_count};""")
+		# clean up
+		shell("""
+		rm {input.vcf_in}.anc.tmp;
+		rm {input.vcf_in}.rs0.list;
+		rm {input.vcf_in}.rs1.list;
+		""")
+
+
+
 
 
 
@@ -396,6 +480,8 @@ rule write_report:
 		sequenced_reads_summary=["meta/sequenced_reads.dat"],
 		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa','bwaUniq']),
 		VCF_reports = expand("meta/{treat}.vs_dm6.calledVariants.summary", treat=["control","mutant"]),
+		winnowed_VCF_counts = expand("analysis/{prefix}.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out", prefix=["control","mutant"]),
+		novelist_counts = expand("analysis/{prefix}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.{origin}.count", prefix=["control","mutant"], origin=["novel"]),
 		#VCF_contrasts = ["meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites_in_files", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.1", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.2", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc.count",],
 	output:
 		pdf_out="thingy.pdf"
