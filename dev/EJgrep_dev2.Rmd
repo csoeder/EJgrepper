@@ -375,6 +375,137 @@ Hmm, no looks like those AFs are pretty well correllated.
 
 Okay to compromise let's just split the two into a novel and a backmutation file...
 
+## 4 April 2019
+
+Outputting the novel forward singletons to a TSV for talia
+
+```{r echo=FALSE}
+
+biallele.novel.counts.singleton.tbl <- biallele.novel.counts.singleton %>% filter(group=="mutant") %>% select(c("site_id", "chrom", "pos", `1_allele`, `2_allele`, "delta_bp")) %>% mutate(vartype=case_when(delta_bp < 0 ~ "del", delta_bp > 0 ~ "ins" )) %>%  rename("ref" = `1_allele`, alt=`2_allele`)
+write.table(biallele.novel.counts.singleton.tbl , file = "novel_singleton_mcm5_indels.txt",row.names=FALSE, na="",col.names=FALSE, sep="\t")
+
+```
+uh, why doesn't this write to the  working directory??? (also adds quot marks around all the non-numerics, gross)
+
+```{bash eval=FALSE}
+join -1 3 -2 2 <( LANG=en_EN sort -k 3 novel_singleton_mcm5_indels.txt ) <(grep -v "#" variants/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.vcf | LANG=en_EN sort -k 2 ) | tr " " "\t" | awk '{if($3==$8)print;}' | cut -f 1-7,16- |sort -k3,3 -k1n,1  > novel_singleton_mcm5_indels.augmented.txt
+```
+
+UGH I remember this sort/join incompatibility now..........
+
+https://unix.stackexchange.com/questions/12942/join-file-2-not-in-sorted-order
+
+Hmm, why does one individual have nearly half the novel singletons???
+
+## 11 April 2019
+
+Ok gonna look at chrX... It looks like the main changes will be in the Winnower and Novelist rules. 
+
+Winnower: add --chr chrX
+Novelist: as is for autosomes. For X, we still need to demand that the parents are homozygous, and exactly one offspring is homozygous (not het) for the other allele. This is b/c the offspring are all male. If there are heterozygous variants there is a problem??? 
+
+Actually no, that currently happens in the .Rmd; Novelist is fine as-is. 
+
+Might as well use the uncorrected number in some plots (eg section 3.1). When it comes time to scan for novel variants, going to reset the chrX mac to floor(mac/2). (if there is a mac of 1 on a chrX, it gets rounded down to zero. )
+
+Actually I guess it would be ceil() when it comes to the back mutations. 
+
+
+```{r eval=FALSE}
+
+mutate( mac = case_when( chrom == "chrX" ~ floor(mac/2), TRUE ~ as.double(mac)))
+
+```
+
+Wait.... this isn't going to let me differentiate between one 1/1 and two 0/1 's :(
+
+## 12 April 2019 
+
+Going to take a look at the unseemly amount of heterozygosity on the chrX. Using Kevin Blighe's code: 
+https://www.biostars.org/p/291147/
+
+https://stackoverflow.com/questions/19408649/pipe-input-into-a-script
+
+```{bash eval=FALSE}
+cat scripts/madHetter.sh 
+```
+
+```
+#!/bin/bash
+awk -F"\t" '{line=$0} BEGIN {
+        print "CHR\tPOS\tID\tREF\tALT\tAltHetCount\tAltHomCount\tRefHomCount"
+    } !/^#/ {
+        if (gsub(/,/, ",", $5)==0) {
+            print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t" gsub(/0\|1|1\|0|0\/1|1\/0/,"") "\t" gsub(/1\/1|1\|1/,"") "\t" gsub(/0\/0|0\|0/,"")
+        } else if (gsub(/,/, ",", $5)==1) {
+            print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t" gsub(/1\/0|0\/1|1\|0|0\|1|1\|2|2\|1|1\/2|2\/1/,"")","gsub(/2\/0|0\/2|2\|0|0\|2|1\|2|2\|1|1\/2|2\/1/,"",line) "\t" gsub(/1\/1|1\|1/,"")","gsub(/2\/2|2\|2/,"") "\t" gsub(/0\/0|0\|0/,"")
+        }
+    }'
+```
+
+
+```{bash eval=FALSE}
+cat variants/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.vcf | sh scripts/madHetter.sh | grep -v "AltHetCount" | nl -n rn | awk '{print $2,$3,$3+1,$1,"0",$4,$5,$6,$7,$8,$9}'  | tr " " "\t" >  analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.het.bg
+
+cat variants/control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.vcf | sh scripts/madHetter.sh | grep -v "AltHetCount" | nl -n rn | awk '{print $2,$3,$3+1,$1,"0",$4,$5,$6,$7,$8,$9}'  | tr " " "\t" >  analysis/control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.het.bg
+
+```
+
+```{r echo=FALSE}
+library("ggbio")
+library("rtracklayer")
+
+cntrl.hetZyggy.bg <- import.bedGraph("analysis/control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.het.bg")
+
+```
+
+
+
+May be worth looking at the freebayes --cnv-map argument. 
+
+## 15 April 2019
+
+
+
+```{r echo=FALSE}
+
+names(mcols(cntrl.hetZyggy.bg)) <- c("score", "zero", "na", "ref", "alt", "het", "homAlt", "homRef")
+mcols(cntrl.hetZyggy.bg) <- mcols(cntrl.hetZyggy.bg) %>% as_tibble()  %>%  select(-c("zero", "na"))
+cntrl.hetZyggy.bg$treat <- as.factor("control")
+
+mut.hetZyggy.bg <- import.bedGraph("analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.het.bg")
+names(mcols(mut.hetZyggy.bg)) <- c("score", "zero", "na", "ref", "alt", "het", "homAlt", "homRef")
+mcols(mut.hetZyggy.bg) <- mcols(mut.hetZyggy.bg) %>% as_tibble()  %>%  select(-c("zero", "na"))
+mut.hetZyggy.bg$treat <- as.factor("mutant")
+
+hetZyggy.bg <- c(cntrl.hetZyggy.bg,mut.hetZyggy.bg)
+hetZyggy.bg$tot <- hetZyggy.bg$het + hetZyggy.bg$homAlt + hetZyggy.bg$homRef 
+hetZyggy.bg$zyggy <- (hetZyggy.bg$het)/hetZyggy.bg$tot
+hetZyggy.bg$chrom <- hetZyggy.bg@seqnames
+
+```
+
+```{r echo=FALSE}
+
+ggplot(mcols(hetZyggy.bg) %>% as.data.frame()) + geom_violin(aes(x=chrom, y=zyggy, fill=treat))
+
+```
+
+```{r echo=FALSE}
+
+#autoplot(hetZyggy.bg, aes(y=zyggy, color=treat), geom='line') + facet_wrap(~seqnames, scales = "free_x") + labs(y="", title = "") + theme_clear() 
+
+```
+I'd need to window the bedgraph actually but the violin plot looks not tooo bad. 
+
+Need to implement the --cnv-map
+
+
+
+
+
+Corbin wants me to look and SNPs too
+
 
 
 

@@ -142,7 +142,7 @@ rule FASTP_summarizer:
 
 rule demand_FASTQ_analytics:	#forces a FASTP clean
 	input:
-		jasons_in = expand("meta/FASTP/{samplename}.json.pruned", samplename = sample_by_name.keys())
+		jasons_in = expand("meta/FASTP/{samplename}.json.pruned", samplename = sampname_by_group['all'])
 	output:
 		summary = "meta/sequenced_reads.dat"
 	params:
@@ -153,8 +153,6 @@ rule demand_FASTQ_analytics:	#forces a FASTP clean
 		"Collecting read summaries for all samples ...."
 	shell:
 		"cat {input.jasons_in} > {output.summary}"
-
-
 
 
 
@@ -200,9 +198,6 @@ rule bwa_uniq:
 		shell("samtools index {output.bam_out}")
 
 
-
-
-
 rule bam_reporter:
 	input:
 		bam_in = "mapped_reads/{sample}.vs_{ref_genome}.{aligner}.sort.bam"
@@ -228,7 +223,7 @@ rule bam_reporter:
 
 rule demand_BAM_analytics:
 	input:
-		bam_reports = lambda wildcards: expand("meta/BAMs/{sample}.vs_{ref_genome}.{aligner}.summary", sample=sample_by_name.keys(), ref_genome=wildcards.ref_genome, aligner=wildcards.aligner)
+		bam_reports = lambda wildcards: expand("meta/BAMs/{sample}.vs_{ref_genome}.{aligner}.summary", sample=sampname_by_group['all'], ref_genome=wildcards.ref_genome, aligner=wildcards.aligner)
 	output:
 		full_report = "meta/alignments.vs_{ref_genome}.{aligner}.summary"
 	params:
@@ -263,6 +258,7 @@ rule call_VCF_by_group_parallel:
 		bams_in = lambda wildcards: expand("mapped_reads/{group}.vs_{ref_genome}.{aligner}.sort.bam", group=sampname_by_group[wildcards.group], ref_genome=wildcards.ref_genome, aligner=wildcards.aligner),
 		windows_in = "utils/{ref_genome}_w100000_s100000.windows.bed"
 	output:
+		cnv_map = "utils/{group}.vs_{ref_genome}.{aligner}.cnv",
 		vcf_out = "variants/{group}.vs_{ref_genome}.{aligner}.vcf"
 	params:
 		freebayes="--standard-filters",
@@ -270,13 +266,29 @@ rule call_VCF_by_group_parallel:
 		runtime="12:00:00",
 		cores=24,
 	message:
-		"Jointly calling variants from all samples mapped to \ {wildcards.ref_genome} \ with \ {wildcards.aligner} \ "
+		"Jointly calling variants from {wildcards.group} mapped to \ {wildcards.ref_genome} \ with \ {wildcards.aligner} \ "
 	run:
 		ref_genome_file=ref_genome_by_name[wildcards.ref_genome]['path']
+		ref_fai = ref_genome_by_name[wildcards.ref_genome]['fai']
+
+		shell("""rm -f {output.cnv_map} """)
+		for sampname in sampname_by_group[wildcards.group]:
+			shell(""" cat {ref_fai} | grep -v "chr[XY]" | awk '{{print $1,"1",$2,"{sampname}",2}}' | tr " " "\t" >> {output.cnv_map} """)
+			if sample_by_name[sampname]['sex'] == "M":
+				shell(""" cat {ref_fai} | grep "chrX" | awk '{{print $1,"1",$2,"{sampname}",1}}' | tr " " "\t" >> {output.cnv_map};
+						cat {ref_fai} | grep "chrY" | awk '{{print $1,"1",$2,"{sampname}",1}}' | tr " " "\t" >> {output.cnv_map} """)
+			elif sample_by_name[sampname]['sex'] == "F":
+				shell(""" cat {ref_fai} | grep "chrX" | awk '{{print $1,"1",$2,"{sampname}",2}}' | tr " " "\t" >> {output.cnv_map};
+						cat {ref_fai} | grep "chrY" | awk '{{print $1,"1",$2,"{sampname}",0}}' | tr " " "\t" >> {output.cnv_map} """)
+			else:
+				shell(""" cat {ref_fai} | grep "chrX" | awk '{{print $1,"1",$2,"{sampname}",0}}' | tr " " "\t" >> {output.cnv_map};
+						cat {ref_fai} | grep "chrY" | awk '{{print $1,"1",$2,"{sampname}",0}}' | tr " " "\t" >> {output.cnv_map}""")
+
 		shell("""cat {input.windows_in}| awk '{{print$1":"$2"-"$3}}' > {input.windows_in}.rfmt""")
-		shell("scripts/freebayes-parallel {input.windows_in}.rfmt {params.cores} {params.freebayes} -f {ref_genome_file} {input.bams_in} | vcftools --vcf - --recode --recode-INFO-all --stdout  > {output.vcf_out} ")
-
-
+		shell("scripts/freebayes-parallel {input.windows_in}.rfmt {params.cores} {params.freebayes} --cnv-map {output.cnv_map} -f {ref_genome_file} {input.bams_in} | vcftools --vcf - --recode --recode-INFO-all --stdout  > {output.vcf_out}.tmp ")
+		# renamer: (MOVE THIS TO THE VCF CALLER!!!)
+		shell("""cat <(cat {output.vcf_out}.tmp | grep "#") <(cat {output.vcf_out}.tmp | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "rs"$0}}'| paste <(cat {output.vcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.vcf_out} ;""")
+		shell("""rm {output.vcf_out}.tmp""")
 
 rule vcf_reporter:
 	input:
@@ -390,7 +402,7 @@ rule VCF_winnower:
 		runmem_gb=8,
 		runtime="4:00:00",
 		cores=4,
-		good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4",
+		good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4 --chr chrX",
 		dpth_filt = 10,
 		max_uncalled = 0,
 	message:
@@ -424,49 +436,29 @@ rule VCF_novelist:
 		"potatoes for breakfast.... "
 	run:
 		par_string = " ".join(["--indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
-		nopar_string = " ".join(["--remove-indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
-		# shell("""
-		# 	cat {input.vcf_in} | grep "#" > {input.vcf_in}.anc.tmp;
-		# 	cat {input.vcf_in} | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "rs"$0}}'| paste <(cat {input.vcf_in}| grep -v "#" | cut -f 1,2) - >> {input.vcf_in}.anc.tmp;
+		#nopar_string = " ".join(["--remove-indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
 
-		# 	vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --recode --recode-INFO-all --stdout | grep -v "#" | grep "1|1\|0|1\|1|0" | cut -f 3 > {input.vcf_in}.par.list;
-
-		# 	grep "#" {input.vcf_in}.anc.tmp > {output.novel_vcf};
-		# 	grep -v "#" {input.vcf_in}.anc.tmp | grep -v -wFf {input.vcf_in}.par.list >> {output.novel_vcf};
-		# 	vcftools --vcf {output.novel_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.novel_count};
-
-		# 	grep "#" {input.vcf_in}.anc.tmp > {output.ancestral_vcf};
-		# 	grep -v "#" {input.vcf_in}.anc.tmp | grep -wFf {input.vcf_in}.par.list >> {output.ancestral_vcf};
-		# 	vcftools --vcf {output.ancestral_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.ancestral_count};
-			
-		# 	rm {input.vcf_in}.anc.tmp;
-		# 	rm {input.vcf_in}.par.list;
-		# 	""")
-
-		# renamer: (MOVE THIS TO THE VCF CALLER!!!)
-		shell("""cat <(cat {input.vcf_in} | grep "#") <(cat {input.vcf_in} | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "rs"$0}}'| paste <(cat {input.vcf_in}| grep -v "#" | cut -f 1,2) - ) > {input.vcf_in}.anc.tmp;""")
 		#collect all the variant IDs which are 0|0 in both parents
-		shell("""vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --non-ref-ac 0 --max-non-ref-ac 0  --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs0.list;""")
 		# subset the VCF to those sites which are 0|0 in both parents, then to those which also have at least one alt allele in an offspring
-		shell("""cat <( grep "#" {input.vcf_in}.anc.tmp ) <( grep -v "#" {input.vcf_in}.anc.tmp | grep -wFf {input.vcf_in}.rs0.list ) | vcftools --vcf - --non-ref-ac 1 --max-non-ref-af 1.0  --recode --recode-INFO-all --stdout > {output.novel_vcf} """)
-		shell("""vcftools --vcf {output.novel_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.novel_count};""")
-
+		shell("""
+			vcftools --vcf {input.vcf_in} {par_string} --non-ref-ac 0 --max-non-ref-ac 0  --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs0.list;
+			cat <( grep "#" {input.vcf_in} ) <( grep -v "#" {input.vcf_in} | grep -wFf {input.vcf_in}.rs0.list ) | vcftools --vcf - --non-ref-ac 1 --max-non-ref-af 1.0  --recode --recode-INFO-all --stdout > {output.novel_vcf};
+			vcftools --vcf {output.novel_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.novel_count};
+		""")
 
 		# collect variant IDs which are 1|1 in both parents
-		shell("""vcftools --vcf {input.vcf_in}.anc.tmp {par_string} --non-ref-af 1 --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs1.list;""")
 		# subset the VCF to those sites which are 1|1 in both parents, then to those which also have at least one ref allele in an offspring
-		shell("""cat <( grep "#" {input.vcf_in}.anc.tmp ) <( grep -v "#" {input.vcf_in}.anc.tmp | grep -wFf {input.vcf_in}.rs1.list ) | vcftools --vcf - --max-non-ref-af 0.99999  --recode --recode-INFO-all --stdout > {output.back_vcf}""")
-		#shell(""" touch {output.novel_vcf}.1 """)
-		# merge and sort the two kinds of novel vars...
-		#shell("""vcf-concat {output.novel_vcf}.0 {output.novel_vcf}.1 | vcf-sort > {output.novel_vcf}""")
-		#shell("""cp {output.novel_vcf}.0 {output.novel_vcf}""")
 		#tally the allele counts
-		shell("""vcftools --vcf {output.back_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.back_count};""")
+		shell("""
+			vcftools --vcf {input.vcf_in} {par_string} --non-ref-af 1 --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs1.list;
+			cat <( grep "#" {input.vcf_in} ) <( grep -v "#" {input.vcf_in} | grep -wFf {input.vcf_in}.rs1.list ) | vcftools --vcf - --max-non-ref-af 0.99999  --recode --recode-INFO-all --stdout > {output.back_vcf};
+			vcftools --vcf {output.back_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.back_count};
+		""")
+
 		# clean up
 		shell("""
-		rm {input.vcf_in}.anc.tmp;
-		rm {input.vcf_in}.rs0.list;
-		rm {input.vcf_in}.rs1.list;
+			rm {input.vcf_in}.rs0.list;
+			rm {input.vcf_in}.rs1.list;
 		""")
 
 
@@ -479,7 +471,7 @@ rule write_report:
 		reference_genome_summary = ["meta/reference_genomes.summary"],
 		sequenced_reads_summary=["meta/sequenced_reads.dat"],
 		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa','bwaUniq']),
-		VCF_reports = expand("meta/{treat}.vs_dm6.calledVariants.summary", treat=["control","mutant"]),
+		VCF_reports = "meta/allGroups.vs_dm6.bwaUniq.calledVariants.summary", #expand("meta/{treat}.vs_dm6.calledVariants.summary", treat="allGroups"),#treat=["control","mutant"]),
 		winnowed_VCF_counts = expand("analysis/{prefix}.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out", prefix=["control","mutant"]),
 		novelist_counts = expand("analysis/{prefix}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.{origin}.count", prefix=["control","mutant"], origin=["novel"]),
 		#VCF_contrasts = ["meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites_in_files", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.1", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.2", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc.count",],

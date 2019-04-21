@@ -1,7 +1,7 @@
 ---
 title: "End Joining Signatures"
 author: "Charlie Soeder"
-date: "3/18/2019"
+date: "4/4/2019"
 output:
   pdf_document:
     toc: true
@@ -146,7 +146,7 @@ The control samples were first published in [@Miller2016]; this cross consists o
 
 >Males were numbered based on whether their father was homozygous w1118 or Canton-S and the number of their het- erozygous mother. For example, male cs12.3 had a Canton-S father, its mother was female number 12, and it was the third male selected for DNA extraction.
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 
 
 data_sets.df.sparse <- data_sets.df %>% filter(subgroups=='all') %>% select(-c(subgroups,sra)) %>% distinct() 
@@ -258,7 +258,7 @@ readcount_process$measure <- factor(readcount_process$measure, levels = c('total
 The fraction of reads retained at each filtration step:
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 #ggplot(readcount_process) +
 ggplot(inner_join(readcount_process, data_sets.df.sparse, by=c("sample"="name"))) + geom_line(aes(group=sample, x=measure,y=value)) + geom_point(aes(x=measure, y=value, group=sample,color=experimental, shape=pedigree))  + labs(title="Read Counts by Processing Step: Unmapped, Mapped, Filtered", x="", y="Number Reads" ) + theme_clear() + theme(axis.text.x = element_text(angle = -45, hjust = 0), legend.position='none' ) 
 
@@ -341,7 +341,7 @@ covstats.brdth %>% kable(caption="Breadth of Coverage Statistics for Raw and Fil
 
 Breadth of coverage, ie, the percentage of the genome covered by at least one read:
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 
 breadth.process <- inner_join(breadth.process, data_sets.df.sparse %>% select(-c("paired", "path", "readsfile1", "readsfile2")), by=c("sample"="name"))
 
@@ -357,7 +357,7 @@ ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(b
 The BWA-Uniq alignments for the control and mutant flies were independently used to call variants in VCF format via Freebayes [@Garrison2012] using standard filters. 
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 
 allGroups.vs_dm6.calledVariants.summary <- read_delim("meta/allGroups.vs_dm6.bwaUniq.calledVariants.summary", "\t", escape_double = FALSE, col_names = FALSE, trim_ws = TRUE)
 names(allGroups.vs_dm6.calledVariants.summary) <- c("group", "aligner", "variant_type", "count")
@@ -453,6 +453,10 @@ filteredTbl.biallele <- rbind(filteredTbl.biallele.tmp, filteredTbl.biallele %>%
 
 To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, for the time being only proper biallelic indels were retained. Finally, only the consolidated autosomes were considered, and only sites which could be called in all 30 sequenced flies. 
 
+
+
+!!! TALK ABOUT HOW TO HANDLE THE X-CHROM !!!
+
 Between the two treatments, this gave a total of $`r filteredTbl.biallele %>% nrow()  `$ sites: 
 
 ```{r echo=FALSE}
@@ -462,7 +466,7 @@ filteredTbl.biallele.tot <- rbind(filteredTbl.biallele %>% group_by(chrom,group)
 filteredTbl.biallele.tot %>%  kable(caption="Quality Biallaeleic INDELs per Chromosome")
 ```
 
-For these sites, minor and major alleles were assigned on the basis of which of the two variants had a smaller or larger allele count, respectively. INDEL type & size were determined relative to the major allele. 
+For these sites, minor and major alleles were assigned on the basis of which of the two variants had a smaller or larger allele count, respectively. INDEL type & size were determined relative to the major allele. To test for mutational bias, R's built in proportion test was applied to the number of deletions compared to the total number of INDELs, with a null hypothese of 0.5 (ie, deletions are as likely as insertions).
 
 ### Novel Variant Identification
 
@@ -540,7 +544,7 @@ ggplot(filteredTbl.biallele %>% mutate(ins=delta_bp>0) %>% group_by(mac,ins,grou
 
 ### Novel INDELs (forward mutation)
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 control.novel.counts <- multicolumn_ACloader("analysis/control.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.count")
 control.novel.counts$group <- as.factor("control")
 
@@ -689,7 +693,7 @@ ggplot(biallele.back.counts.singleton)  + geom_freqpoly(aes(x=delta_bp, color=gr
 ```
 
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE}
 back.single.insert_truth.Tbl <- biallele.back.counts.singleton %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`) %>% filter(group == "control")
 back.single.insert_truth.Tbl <- cbind(back.single.insert_truth.Tbl, map2(back.single.insert_truth.Tbl$del, back.single.insert_truth.Tbl$del + back.single.insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
 
@@ -723,6 +727,7 @@ The fourth, a TATATA deletion at chr2L:21664793, doesn't appear in this VCF (fil
 # Next Steps
 
 *	Explore PINDEL [@Ye2009] for calling larger variants
+*	IMSindel? Shigemizu 2018
 *	Resolve back-mutation mystery
 *	*	Local realignment?
 *	Include chromosome X - manage ploidy difference vs autosomes

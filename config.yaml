@@ -6,8 +6,37 @@ data_sets:
       readsfile2: Df-Mcm5.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [none]
       pedigree: parent      
+    - name: Mcm5-A7
+      paired: True
+      path: FASTQ/mutants/Mcm5-A7/
+      readsfile1: Mcm5-A7.R1.fq
+      readsfile2: Mcm5-A7.R2.fq
+      experimental: mutant
+      source: talia
+      subgroups: [none]
+      pedigree: parent
+    - name: Iso1
+      paired: True
+      path: FASTQ/mutants/Iso1/
+      readsfile1: iso1_n_1_CTTGTA.fastq
+      readsfile2: iso1_n_2_CTTGTA.fastq
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
+      sex: M
+      pedigree: parent
+    - name: w1118m
+      paired: True
+      path: FASTQ/mutants/w1118m/
+      readsfile1: w1118m_n_1_CGATGT.fastq
+      readsfile2: w1118m_n_2_CGATGT.fastq
+      experimental: mutant
+      source: talia
+      subgroups: [all,mutant]
+      pedigree: parent
+      sex: F
     - name: mcm5-01
       paired: True
       path: FASTQ/mutants/mcm5-01/
@@ -288,15 +317,6 @@ data_sets:
       subgroups: [all,mutant]
       pedigree: child
       sex: M
-    - name: Mcm5-A7
-      paired: True
-      path: FASTQ/mutants/Mcm5-A7/
-      readsfile1: Mcm5-A7.R1.fq
-      readsfile2: Mcm5-A7.R2.fq
-      experimental: mutant
-      source: talia
-      subgroups: [all,mutant]
-      pedigree: parent
     - name: CantonS
       paired: True
       path: FASTQ/controls/CantonS/
@@ -308,9 +328,9 @@ data_sets:
       sra: [SRR2044310]
       pedigree: parent
       sex: F
-    - name: w1118
+    - name: w1118c
       paired: True
-      path: FASTQ/controls/w1118/
+      path: FASTQ/controls/w1118c/
       readsfile1: w1118.R1.fq
       readsfile2: w1118.R2.fq
       experimental: control
@@ -2497,6 +2517,6 @@ data_sets:
 reference_genomes:
     - name: dm6
       species: drosophila melanogaster
-      path: /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.fa
-      fai: /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.fa.fai
+      path: /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.main.fa
+      fai: /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.main.fa.fai
       source: UCSC Genome Browser
