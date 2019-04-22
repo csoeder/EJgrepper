@@ -287,7 +287,7 @@ rule call_VCF_by_group_parallel:
 		shell("""cat {input.windows_in}| awk '{{print$1":"$2"-"$3}}' > {input.windows_in}.rfmt""")
 		shell("scripts/freebayes-parallel {input.windows_in}.rfmt {params.cores} {params.freebayes} --cnv-map {output.cnv_map} -f {ref_genome_file} {input.bams_in} | vcftools --vcf - --recode --recode-INFO-all --stdout  > {output.vcf_out}.tmp ")
 		# renamer: (MOVE THIS TO THE VCF CALLER!!!)
-		shell("""cat <(cat {output.vcf_out}.tmp | grep "#") <(cat {output.vcf_out}.tmp | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "rs"$0}}'| paste <(cat {output.vcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.vcf_out} ;""")
+		shell("""cat <(cat {output.vcf_out}.tmp | grep "#") <(cat {output.vcf_out}.tmp | grep -v "#" | cut -f 4- | nl -n ln | awk '{{print "id"$0}}'| paste <(cat {output.vcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.vcf_out} ;""")
 		shell("""rm {output.vcf_out}.tmp""")
 
 rule vcf_reporter:
@@ -408,9 +408,10 @@ rule VCF_winnower:
 	message:
 		"potatoes for breakfast.... "
 	run:
-		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}""")
+		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}.tmp""")
+		shell("""cat <(grep "#" {output.cleanVcf_out}.tmp ) <(grep -v "#" {output.cleanVcf_out}.tmp | cut -f 4- | nl -n ln | awk '{{print "sdbu"$0}}'| tr -d " " | paste <(cat {output.vcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.cleanVcf_out} """)
+		shell("""rm {output.cleanVcf_out}.tmp""" )
 		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.alleleCounts_out}""")
-
 
 
 
@@ -441,8 +442,8 @@ rule VCF_novelist:
 		#collect all the variant IDs which are 0|0 in both parents
 		# subset the VCF to those sites which are 0|0 in both parents, then to those which also have at least one alt allele in an offspring
 		shell("""
-			vcftools --vcf {input.vcf_in} {par_string} --non-ref-ac 0 --max-non-ref-ac 0  --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs0.list;
-			cat <( grep "#" {input.vcf_in} ) <( grep -v "#" {input.vcf_in} | grep -wFf {input.vcf_in}.rs0.list ) | vcftools --vcf - --non-ref-ac 1 --max-non-ref-af 1.0  --recode --recode-INFO-all --stdout > {output.novel_vcf};
+			vcftools --vcf {input.vcf_in} {par_string} --non-ref-ac 0 --max-non-ref-ac 0  --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.sdbu0.list;
+			vcftools --vcf {input.vcf_in} --snps {input.vcf_in}.sdbu0.list --non-ref-ac 1 --max-non-ref-af 1.0  --recode --recode-INFO-all --stdout > {output.novel_vcf};
 			vcftools --vcf {output.novel_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.novel_count};
 		""")
 
@@ -450,15 +451,15 @@ rule VCF_novelist:
 		# subset the VCF to those sites which are 1|1 in both parents, then to those which also have at least one ref allele in an offspring
 		#tally the allele counts
 		shell("""
-			vcftools --vcf {input.vcf_in} {par_string} --non-ref-af 1 --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.rs1.list;
-			cat <( grep "#" {input.vcf_in} ) <( grep -v "#" {input.vcf_in} | grep -wFf {input.vcf_in}.rs1.list ) | vcftools --vcf - --max-non-ref-af 0.99999  --recode --recode-INFO-all --stdout > {output.back_vcf};
+			vcftools --vcf {input.vcf_in} {par_string} --non-ref-af 1 --recode --recode-INFO-all --stdout | grep -v "#" | cut -f 3 > {input.vcf_in}.sdbu1.list;
+			vcftools --vcf {input.vcf_in} --snps {input.vcf_in}.sdbu1.list --max-non-ref-af 0.99999  --recode --recode-INFO-all --stdout > {output.back_vcf};
 			vcftools --vcf {output.back_vcf} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.back_count};
 		""")
 
 		# clean up
 		shell("""
-			rm {input.vcf_in}.rs0.list;
-			rm {input.vcf_in}.rs1.list;
+			rm {input.vcf_in}.sdbu0.list;
+			rm {input.vcf_in}.sdbu1.list;
 		""")
 
 

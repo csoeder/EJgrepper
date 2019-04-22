@@ -386,7 +386,7 @@ mutant.calledVariants.bwaUniq.lmiss$group <- "mutant"
 control.calledVariants.bwaUniq.lmiss <- read_delim("meta/VCFs/control.vs_dm6.bwaUniq.summary.lmiss", "\t", escape_double = FALSE, trim_ws = TRUE)
 control.calledVariants.bwaUniq.lmiss$group <- "control"
 
-allGroups.calledVariants.lmiss <- rbind(control.calledVariants.bwaUniq.lmiss, mutant.calledVariants.bwaUniq.lmiss) %>% select(c(group, N_MISS, N_DATA)) %>%  mutate(group=as.factor(group), N_PRES=floor(N_DATA/2))
+allGroups.calledVariants.lmiss <- rbind(control.calledVariants.bwaUniq.lmiss, mutant.calledVariants.bwaUniq.lmiss) #%>% select(c(group, N_MISS, N_DATA)) %>%  mutate(group=as.factor(group), N_PRES=floor(N_DATA/2))
 
 ```
 
@@ -394,9 +394,12 @@ allGroups.calledVariants.lmiss <- rbind(control.calledVariants.bwaUniq.lmiss, mu
 
 ```{r echo=FALSE, warning=FALSE}
 
-nsamps <- max(allGroups.calledVariants.lmiss$N_PRES)
+#nsamps <- max(allGroups.calledVariants.lmiss$N_PRES)
 
-ggplot(allGroups.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=group, color=group), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
+#ggplot(allGroups.calledVariants.lmiss) + geom_freqpoly(aes(x=N_PRES, group=group, color=group), bins=nsamps) + scale_x_continuous(name ="Number Samples",limits=c(1,nsamps), breaks =seq(1,nsamps,1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
+
+ggplot(allGroups.calledVariants.lmiss) + geom_freqpoly(aes(x=1-F_MISS, group=group, color=group), bins=20) + scale_x_continuous(name ="Fraction of Samples",limits=c(0,1), breaks =seq(0,1,0.1)) + theme_clear() + labs(title="Histogram of Variant Site Count,\n by Number of Samples Called At Site", y="Number of Sites")
+
 
 ```
 
@@ -440,10 +443,13 @@ ggplot(allGroups.imiss.augmented) + geom_point(aes(x= value, y=1-F_MISS, color=g
 
 filteredTbl.cntrl <- multicolumn_ACloader("analysis/control.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
 filteredTbl.cntrl$group <- as.factor("control")
+
 filteredTbl.mut <- multicolumn_ACloader("analysis/mutant.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out") 
 filteredTbl.mut$group <- as.factor("mutant")
 
-filteredTbl.biallele <- rbind(filteredTbl.cntrl, filteredTbl.mut) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+#filteredTbl.biallele <- rbind(filteredTbl.cntrl, filteredTbl.mut) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+filteredTbl.biallele <- rbind(filteredTbl.cntrl  %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) , filteredTbl.mut %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`))  )
 
 
 filteredTbl.biallele.tmp <- filteredTbl.biallele %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
@@ -551,7 +557,10 @@ control.novel.counts$group <- as.factor("control")
 mutant.novel.counts <- multicolumn_ACloader("analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.count")
 mutant.novel.counts$group <- as.factor("mutant")
 
-biallele.novel.counts <- rbind(control.novel.counts, mutant.novel.counts) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+#biallele.novel.counts <- rbind(control.novel.counts, mutant.novel.counts) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+biallele.novel.counts <- rbind(control.novel.counts %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)), mutant.novel.counts%>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)))  
+
 
 biallele.novel.counts.tmp <- biallele.novel.counts %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
 
@@ -631,7 +640,9 @@ control.back.counts$group <- as.factor("control")
 mutant.back.counts <- multicolumn_ACloader("analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.back.count")
 mutant.back.counts$group <- as.factor("mutant")
 
-biallele.back.counts <- rbind(control.back.counts, mutant.back.counts) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+#biallele.back.counts <- rbind(control.back.counts, mutant.back.counts) %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) 
+
+biallele.back.counts <- rbind(control.back.counts %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) , mutant.back.counts %>% gather(variable, value, -(site_id:chroms_avail), -var_num) %>% unite(temp, var_num, variable) %>%  spread(temp, value) %>% mutate(len1 = nchar(`1_allele`),len2 = nchar(`2_allele`), `1_allele_count`=as.numeric(`1_allele_count`), `2_allele_count`=as.numeric(`2_allele_count`), `1_allele_freq`=as.numeric(`1_allele_freq`), `2_allele_freq`=as.numeric(`2_allele_freq`)) )
 
 biallele.back.counts.tmp <- biallele.back.counts %>% filter(`1_allele_count` >= `2_allele_count`) %>% mutate(delta_bp=len2-len1,  mac=`2_allele_count`)
 
