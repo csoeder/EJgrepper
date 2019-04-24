@@ -136,7 +136,8 @@ Two treatments have been sequenced: a control line, and an mcm5 mutant. The data
 data_sets.df.sparse %>% group_by(experimental,pedigree) %>% summarise(sample_count=n()) %>% kable(caption="Number of Sequenced Samples by Treatment")
 ```
 
-The samples from the mcm5 mutant cross were provided by Talia:
+The samples from the mcm5 mutant cross were provided by Talia. These include two "parents" (w1118 and Iso1), which provided chromosomes 2, 4, X, and Y. From these, a fly ("A7") was engineered with a w1118 background and [details about A7 chr3 here]. Another ("Df") was engineered with an mcm5 deficiency on chromosome 3. These were mated and a female F1 selected, having a genome which is w1118/Iso1 except for chromosome 3, which is A7/Df. This F1 female was then mated with an Iso1 male, and the male F2 offspring collected and sequenced. These F2 are thus expected to have ancestry of ~3:1 Iso1:w1118 on chromosomes 2 and 4, ~1:1 on chromosome X, and a chromosome Y which is solely Iso1. The A7 and Df flies have also been sequenced, and this data may be integrated later to reconstruct chromosome 3. 
+
 
 ```{r echo=FALSE}
 data_sets.df.sparse %>% filter(experimental == 'mutant') %>% select(c(name, source, pedigree, sex)) %>%  arrange(pedigree, desc(name)) %>% kable(caption="Sequenced Samples from mcm5 Mutant Cross")
@@ -354,7 +355,7 @@ ggplot(breadth.process %>%  select(-c(breadth_retention, measure)) %>%  gather(b
 
 ## Called Variants
 
-The BWA-Uniq alignments for the control and mutant flies were independently used to call variants in VCF format via Freebayes [@Garrison2012] using standard filters. 
+The BWA-Uniq alignments for the control and mutant flies were independently used to call variants in VCF format via Freebayes [@Garrison2012] using standard filters, and providing sex chromosome ploidy for each individual fly. 
 
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
@@ -376,7 +377,6 @@ allGroups.vs_dm6.calledVariants.summary.sprud %>%  transmute( aligner=aligner, I
 
 
 For each group VCF, 30 samples from the group called jointly. However, not all sites were called in all samples (eg, due to coverage differences). The sites had the following group-wide call rate:
-
 
 
 ```{r echo=FALSE, include=FALSE}
@@ -457,11 +457,8 @@ filteredTbl.biallele.tmp <- filteredTbl.biallele %>% filter(`1_allele_count` >= 
 filteredTbl.biallele <- rbind(filteredTbl.biallele.tmp, filteredTbl.biallele %>% filter(`1_allele_count` < `2_allele_count`) %>% mutate(delta_bp=len1-len2, mac=`1_allele_count`)) %>% mutate( group=`1_group`) %>%  select(-c(`2_group`))
 ```
 
-To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, for the time being only proper biallelic indels were retained. Finally, only the consolidated autosomes were considered, and only sites which could be called in all 30 sequenced flies. 
+To search for traces of end-joining, the BWA-Uniq derived variants were further filtered, requiring a depth of 10 reads at the site for all flies sequenced: the per-site probability of sampling the same chromosome 10 times is < 0.1% given a fair draw, but this threshold is lower than the minimum average depth of coverage among the samples. Although it is possible that the join could occur near an already polymorphic site, or might manifest as a complex variant rather than a simple insertion/deletion, for the time being only proper biallelic indels were retained. Only sites which could be called in all 30 sequenced flies were considered. 
 
-
-
-!!! TALK ABOUT HOW TO HANDLE THE X-CHROM !!!
 
 Between the two treatments, this gave a total of $`r filteredTbl.biallele %>% nrow()  `$ sites: 
 
@@ -491,7 +488,7 @@ ggplot(filteredTbl.biallele %>%  group_by(mac, delta_bp,group) %>% summarise(cou
 ```
 
 
-Since DSB is likely to create unique variants in the population, allele frequency is an important property to filter on. To get an idea of the expected allele frequency distribution, consider that for a given variable site, a diploid parent may be homozygous reference (a/a), homozygous alternate (A/A), or heterozygous (a/A). Thus, there are five relevant pairings of genotype: AA x AA, aa x aA, aa x AA, aA x AA, and aA x aA. (aa x aa corresponds to the case in which both parents have the reference allele, and the expectation would be the offspring would as well.) Under random assortment, the aa x aA and aA x AA crosses give a minor allele frequency of 1/4 and the aa x AA and aA x aA crosses give a minor allele frequency of 1/2. Finally, the AA x AA cross corresponds to the case where the parents are fixed for an alternate allele, and thus the offpsring would be expected to be fixed as well; the minor allele frequency would thus be zero. So, given sample of 30 diploid flies, the expected distribution of minor allele counts would be peaks centered on 0, 15, and 30. 
+Since DSB is likely to create unique variants in the population, allele frequency is an important property to filter on. To get an idea of the expected allele frequency distribution, consider that for a given variable site, a diploid parent may be homozygous reference (a/a), homozygous alternate (A/A), or heterozygous (a/A). Thus, there are five relevant pairings of genotype: AA x AA, aa x aA, aa x AA, aA x AA, and aA x aA. Under random assortment, the aa x aA and aA x AA crosses give a minor allele frequency of 1/4 and the aa x AA and aA x aA crosses give a minor allele frequency of 1/2. Finally, the AA x AA cross corresponds to the case where the parents are fixed for an alternate allele, and  aa x aa corresponds to the case in which both parents are fixed for the reference allele; in both cases the offpsring would be expected to be fixed as well and the minor allele frequency would thus be zero. So, given sample of 30 diploid flies, the expected distribution of minor allele counts would be peaks centered on 0, 15, and 30. (The haploid X chromosome would be expected to have peaks at 0 and ~7.5)
 
 
 
@@ -510,14 +507,14 @@ Both the control and mutant flies have peaks near 0, but on closer inspection th
 filteredTbl.biallele %>% filter(mac<4) %>% group_by(group, mac) %>%  summarize(count=n()) %>% spread(group,count) %>% kable(caption = "Low-Frequency Site Details for Controls and Mutants")
 ```
 
-Both samples have slightly skewed but generally reasonable peaks in the 10-20 count range, corresponding to alleles with frequency ~25%. The control flies are depleted of alleles with a count near 30 (frequency ~50%), but the mutants are not. However, the mutants' variants in this range almost all on the arms of chromosome 3; conversely, almost all of its very rare variants are on the arms of chromosome 2. ( _did we decide that this is because 2 is isogenized and 3 isn't?_)
+Both samples have slightly skewed but generally reasonable peaks in the 10-20 count range, corresponding to alleles with frequency ~25%. The control flies are depleted of alleles with a count near 30 (frequency ~50%), but the mutants are not. However, the mutants' variants in this range almost all on the arms of chromosome 3; conversely, almost all of their very rare variants are on the arms of chromosome 3 (which is not currently informative) or on chromosome X. ( _did we decide that this is because 2 is isogenized and 3 isn't?_)
 
 
 ```{r echo=FALSE}
 ggplot(filteredTbl.biallele) + geom_freqpoly(aes(x=mac, color=group),bins=31) + facet_wrap(chrom~.) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality INDELs, by Minor Allele Count, Treatment, and Chromosome")
 ```
 
-Another unusual feature of both groups is the tendency of the mid-range variants (frequency ~25%) do not appear to be unimodes centered at MAC=15, but rather split into smaller peaks near MAC~10 and MAC~20. These would correspond to ratios of ~1/6 and 2/6. 
+Another unusual feature of both groups is that mid-range variants (frequency ~25%) do not appear to be unimodes centered at MAC=15, but rather split into smaller peaks near MAC~10 and MAC~20. These would correspond to ratios of ~1/6 and 2/6. 
 
 
 ```{r echo=FALSE}
@@ -536,7 +533,7 @@ kable(insert_truth.Tbl, caption = "Deletion Bias in mcm5 Mutants vs. Controls")
 
 ```
 
-(A similar result holds if the count by type is scaled by the change in length, for a ratio of bp removed to total bp change).
+(A similar result holds if the count by type is scaled by the change in length, for a ratio of total bp removed to total bp change).
 
 When constrained to a single MAC value, the degree of mutational bias varies, within and between the two treatments. 
 
@@ -568,7 +565,7 @@ biallele.novel.counts <- rbind(biallele.novel.counts.tmp, biallele.novel.counts 
 
 ```
 
-These sites were further filtered to collect those which are heredetarily novel, which is to say, non-reference alleles which appear in at least one offspring but neither parent. These are overall more common in the mutant flies than in the controls, especially on chromosome 2:
+These sites were further filtered to collect those which are heredetarily novel, which is to say, non-reference alleles which appear in at least one offspring but neither parent. These are comparable in number between in the mutant flies and the controls, except on chromosome 3, where spurious novelty is introduced by the w1118/Iso1 background standing in for the true A7/Df background:
 
 ```{r echo=FALSE}
 biallele.novel.byChrom <- inner_join(biallele.novel.counts %>% group_by(group, chrom) %>% summarise(novel=n()), filteredTbl.biallele %>% group_by(group, chrom) %>% summarize(total=n()), by=c("group"="group", "chrom"="chrom") ) %>% mutate(percent_novel= 100*novel/total) %>% select(c("group","chrom","total","novel","percent_novel"))
@@ -577,7 +574,7 @@ biallele.novel.byChrom %>%  mutate(percent_novel=human_readable_croncher( percen
 
 ```
 
-In the mutant flies, the majority of the novel INDELs have an allele frequency ~25%, suggesting that they are cases in which one of the parents was actually a heterozygote but was misclassified:
+In the mutant flies, the majority of the novel INDELs appear on chromosome 3 and have an allele frequency ~25%, as expected. In the control flies, there is scattering of novel INDELs with allele frequency < 25%, suggesting they are the result of alleles which are present in one of the parents but not recognized there by the variant caller.
 
 ```{r echo=FALSE}
 ggplot(biallele.novel.counts) + geom_freqpoly(aes(x=mac),bins=15, color='black') + geom_freqpoly(aes(x=mac, color=chrom),bins=31) + facet_grid(group~.) + theme_clear() + labs(x="Minor Allele Count (chromosomes)", y="Number of Sites", title="Number of Quality, Heredetarily Novel INDELs, by Minor Allele Count, Chromosome, and Treatment")
@@ -585,24 +582,35 @@ ggplot(biallele.novel.counts) + geom_freqpoly(aes(x=mac),bins=15, color='black')
 ```
 
 ```{r echo=FALSE}
-ggplot(biallele.novel.counts)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
+#ggplot(biallele.novel.counts)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
+ggplot(biallele.novel.counts)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=13) + facet_wrap(~chrom, scales="free_y") + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size")
 ```
 
-The subset of heredetarily novel INDELs shows a significant deletion bias in mutants but not controls:
-
+The subset of heredetarily novel INDELs shows a significant deletion bias in mutants but not controls, though this primarily reflects the spurious novel variants on chromosome 3. 
 
 ```{r echo=FALSE}
 novel.insert_truth.Tbl <- biallele.novel.counts %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+
 novel.insert_truth.Tbl <- cbind(novel.insert_truth.Tbl, map2(novel.insert_truth.Tbl$del, novel.insert_truth.Tbl$del+novel.insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
 
 kable(novel.insert_truth.Tbl, caption = "Deletion bias in mcm5 Mutants  (Hereditarily Novel)")
 ```
 
+When chromosome 3 is omitted from both control and mutants, the both the effect size and the significance deepen for mutants, but the controls still show no significant difference:
+
+
+```{r echo=FALSE}
+novel.insert_truth.Tbl.no3 <- biallele.novel.counts %>% filter(chrom != "chr3L") %>% filter(chrom != "chr3R") %>%  mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+
+novel.insert_truth.Tbl.no3 <- cbind(novel.insert_truth.Tbl.no3, map2(novel.insert_truth.Tbl.no3$del, novel.insert_truth.Tbl.no3$del+novel.insert_truth.Tbl.no3$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
+
+kable(novel.insert_truth.Tbl.no3, caption = "Deletion bias in mcm5 Mutants  (Hereditarily Novel) (Chromosome 3 Omitted)", digits=10)
+```
 
 
 #### Novel, Singleton INDELs (forward mutation)
 
-Assuming that DSBs can occur at many places in the genome with no preference, it is expected that a site will only experience a DSB once in a small population. Additionally, since the break occurs on one chromosome, the individual with the break is expected to be heterozygous for the resulting misrepair. Thus, the heredetarily novel INDELs were subsetted to retain only those with a minor allele count of 1. 
+Assuming that DSBs can occur at many places in the genome with no preference, it is expected that a site will only experience a DSB once in a small population. Additionally, since the break occurs on one chromosome, the individual with the break is expected to be heterozygous on autosomes for the resulting misrepair. Thus, the heredetarily novel INDELs were subsetted to retain only those with a minor allele count of 1. 
 
 
 ```{r echo=FALSE}
@@ -612,10 +620,10 @@ biallele.novel.counts.singleton <- biallele.novel.counts %>% filter(mac==1)
 full_join(biallele.novel.byChrom, biallele.novel.counts.singleton %>% group_by(group, chrom) %>% summarise(novel_singleton=n()), by=c("group"="group", "chrom"="chrom")) %>% mutate(novel_singleton=case_when(is.na(novel_singleton) ~0, TRUE ~ as.double( novel_singleton)), percent_novel_singleton =100*novel_singleton/novel)  %>%  kable(caption="Hereditarily Novel, Singleton Biallaeleic INDELs, by Treatment and Chromosome", digits=1)
 ```
 
-
+The mutants don't appear to have a higher rate of novel INDELs than the controls (off of chr3). However, of the novel INDELs, the mutants appear to have a higher fraction which are singletons. The singleton rate for chromosome 3 in the mutants is very low, consistent with most of those INDELs being inherited from A7/Df.  
 
 ```{r echo=FALSE, warning=FALSE}
-ggplot(biallele.novel.counts.singleton)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=10)  + theme_clear() + scale_x_continuous(limits=c(-4,7), breaks =seq(-3,6,2))+ labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size (Novel Singletons)")
+ggplot(biallele.novel.counts.singleton)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=10) + facet_wrap(~chrom, scales="free_y") + theme_clear() + scale_x_continuous(limits=c(-4,7), breaks =seq(-3,6,2))+ labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size (Novel Singletons)")
 
 ```
 
@@ -627,7 +635,15 @@ novel.single.insert_truth.Tbl <- cbind(novel.single.insert_truth.Tbl, map2(novel
 kable(novel.single.insert_truth.Tbl, caption = "Deletion bias in mcm5 Mutants  (Hereditarily Novel Singletons)")
 ```
 
-The mutant flies have more INDELs overall compared to the controls. The mutants also have a clear bias towards deletion, whereas none can be detected in the controls.
+The mutant flies have more novel singleton INDELs overall compared to the controls. The mutants also have a clear bias towards deletion, whereas none can be detected in the controls. This is still true when chromosome 3 is omitted:
+
+```{r echo=FALSE}
+novel.single.insert_truth.Tbl.no3 <- biallele.novel.counts.singleton %>% filter(chrom != "chr3L") %>% filter(chrom != "chr3R")  %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
+novel.single.insert_truth.Tbl.no3 <- cbind(novel.single.insert_truth.Tbl.no3, map2(novel.single.insert_truth.Tbl.no3$del, novel.single.insert_truth.Tbl.no3$del + novel.single.insert_truth.Tbl.no3$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
+
+kable(novel.single.insert_truth.Tbl.no3, caption = "Deletion bias in mcm5 Mutants  (Hereditarily Novel Singletons) (Chromosome 3 Omitted)")
+```
+
 
 ### Novel INDELs (back mutation)
 
@@ -676,7 +692,7 @@ ggplot(biallele.back.counts) + geom_freqpoly(aes(x=mac),bins=15, color='black') 
 ggplot(biallele.back.counts)  + geom_freqpoly(aes(x=delta_bp, color=group), bins=13)  + theme_clear() + labs(x="Nucleotides Inserted/Deleted", y="Number of Sites", title="INDEL Count by Size (back mutations)")
 ```
 
-```{r echo=FALSE, warning=FALSE}
+```{r echo=FALSE, warning=FALSE, eval=FALSE}
 back.insert_truth.Tbl <- biallele.back.counts %>% mutate(ins=delta_bp>0) %>% group_by(ins,group) %>% summarise(count=n()) %>% spread(ins,count)%>% rename(ins=`TRUE`, del=`FALSE`)
 back.insert_truth.Tbl <- cbind(back.insert_truth.Tbl, map2(back.insert_truth.Tbl$del, back.insert_truth.Tbl$del+back.insert_truth.Tbl$ins, prop.test) %>% map_df(glance) %>% select(c("estimate","p.value")) %>% rename(fraction_del=estimate) )
 

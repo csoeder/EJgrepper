@@ -409,7 +409,7 @@ rule VCF_winnower:
 		"potatoes for breakfast.... "
 	run:
 		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}.tmp""")
-		shell("""cat <(grep "#" {output.cleanVcf_out}.tmp ) <(grep -v "#" {output.cleanVcf_out}.tmp | cut -f 4- | nl -n ln | awk '{{print "sdbu"$0}}'| tr -d " " | paste <(cat {output.vcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.cleanVcf_out} """)
+		shell("""cat <(grep "#" {output.cleanVcf_out}.tmp ) <(grep -v "#" {output.cleanVcf_out}.tmp | cut -f 4- | nl -n ln | awk '{{print "sdbu"$0}}'| tr -d " " | paste <(cat {output.cleanVcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.cleanVcf_out} """)
 		shell("""rm {output.cleanVcf_out}.tmp""" )
 		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.alleleCounts_out}""")
 
