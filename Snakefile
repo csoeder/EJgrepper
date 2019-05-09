@@ -2,8 +2,8 @@ configfile: 'config.yaml'
 
 
 
-#module load python/3.5.1 samtools bedtools bwa r/3.5.0 rstudio/1.1.453 vcftools freebayes
-#PATH=$PATH:/nas/longleaf/home/csoeder/modules/vcflib/bin:/nas/longleaf/home/csoeder/modules/parallel/bin
+#module load python/3.5.1 samtools bedtools bwa r/3.5.0 rstudio/1.1.453 vcftools freebayes bamtools
+#PATH=$PATH:/nas/longleaf/home/csoeder/modules/vcflib/bin:/nas/longleaf/home/csoeder/modules/parallel/bin:/nas/longleaf/home/csoeder/modules/pindel
 
 
 ref_genome_by_name = { g['name'] : g for g in config['reference_genomes']}
@@ -185,7 +185,7 @@ rule bwa_uniq:
 	output:
 		bam_out = "mapped_reads/{sample}.vs_{ref_genome}.bwaUniq.sort.bam"
 	params:
-		quality="-q 20 -F 0x0100 -F 0x0200 -F 0x0300 -F 0x04",
+		quality="-q 20 -F 0x0100 -F 0x0200 -F 0x0300 ",
 		uniqueness="XT:A:U.*X0:i:1.*X1:i:0",
 		runmem_gb=16,
 		runtime="6:00:00",
@@ -333,7 +333,7 @@ rule vcf_reporter:
 
 rule summon_VCF_analytics_base:
 	input:
-		vcf_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_dm6.{aligner}.summary", prefix=["control","mutant"], aligner=["bwaUniq"])
+		vcf_reports = lambda wildcards: expand("meta/VCFs/{prefix}.vs_dm6.{aligner}.summary", prefix=["control","deficiency","background"], aligner=["bwaUniq"])
 	output:
 		full_report = "meta/allGroups.vs_dm6.bwaUniq.calledVariants.summary"
 	params:
@@ -392,7 +392,7 @@ rule summon_VCF_analytics_base:
 # 		"""	
 
 
-rule VCF_winnower:
+rule VCF_indelWinnower:
 	input:
 		vcf_in = "variants/{prefix}.vs_dm6.bwaUniq.vcf",
 	output:
@@ -406,14 +406,12 @@ rule VCF_winnower:
 		dpth_filt = 10,
 		max_uncalled = 0,
 	message:
-		"potatoes for breakfast.... "
+		"filtering the {wildcards.prefix} VCF for depth of coverage, site call percent, allele count, variant type .... "
 	run:
 		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf - --keep-only-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}.tmp""")
 		shell("""cat <(grep "#" {output.cleanVcf_out}.tmp ) <(grep -v "#" {output.cleanVcf_out}.tmp | cut -f 4- | nl -n ln | awk '{{print "sdbu"$0}}'| tr -d " " | paste <(cat {output.cleanVcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.cleanVcf_out} """)
 		shell("""rm {output.cleanVcf_out}.tmp""" )
 		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.alleleCounts_out}""")
-
-
 
 
 rule VCF_novelist:
@@ -434,7 +432,7 @@ rule VCF_novelist:
 		#dpth_filt = 10,
 		#max_uncalled = 0,
 	message:
-		"potatoes for breakfast.... "
+		"filtering the {wildcards.group} VCF for variants which do not appear in the parents.... "
 	run:
 		par_string = " ".join(["--indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
 		#nopar_string = " ".join(["--remove-indv %s"%tuple([x]) for x in parents_by_group[wildcards.group]])
@@ -463,6 +461,166 @@ rule VCF_novelist:
 		""")
 
 
+#checking the false call rate on chrX vs autosomes in male offspring........
+#samtools mpileup -r chr2L:10587-10589 -f /proj/cdjones_lab/Genomics_Data_Commons/genomes/drosophila_melanogaster/dm6.main.fa mapped_reads/w4_3.vs_dm6.bwaUniq.sort.bam mapped_reads/w4_16.vs_dm6.bwaUniq.sort.bam 
+
+
+
+
+
+#pindel????
+#quick and easy insert size w/o picard 
+# head -10000 mappings.sam | awk '{if ($9 > 0) {S+=$9; T+=1}}END{print "Mean: " S/T}' 
+#https://www.biostars.org/p/16556/
+#bamtools stats -in mapped_reads/CantonS.vs_dm6.bwaUniq.sort.bam -insert
+
+#mapped_reads/CantonS.vs_dm6.bwaUniq.sort.bam	232	CantonS
+
+
+# rule pindelIndv:
+# 	input:
+# 		bam_in = "mapped_reads/{samp}.vs_dm6.bwaUniq.sort.bam",
+# 	output:
+# 		pin_out = "pindel/{samp}.vs_dm6.bwaUniq.pindel_D.vcf",
+# 	params:
+# 		runmem_gb=16,
+# 		runtime="4:00:00",
+# 		cores=4,
+# 	message:
+# 		"looking for large variants using PINDEL...."
+# 	run:
+# 		shell(""" mkdir -p pindel """)
+# 		ref_gen = ref_genome_by_name["dm6"]['path']
+# 		shell(""" echo {input.bam_in}"\t"$(bamtools stats -in {input.bam_in} -insert | grep Median | cut -f 2 -d : | tr -d " ")"\t"pindel/{wildcards.samp}.vs_dm6.bwaUniq.pindel > pindel/{wildcards.samp}.cfg """)
+# 		shell(""" pindel -T {params.cores} -f {ref_gen} -i pindel/{wildcards.samp}.cfg -o pindel/{wildcards.samp}.vs_dm6.bwaUniq.pindel """)
+# 		shell(""" pindel2vcf -p pindel/{wildcards.samp}.vs_dm6.bwaUniq.pindel_D -r {ref_gen} -R dm6 -d 19790717 -v {output.pin_out} """)
+
+
+
+rule pindelByGroup:
+	input:
+		bams_in = lambda wildcards: expand("mapped_reads/{group}.vs_{ref_genome}.{aligner}.sort.bam", group=sampname_by_group[wildcards.group], ref_genome="dm6", aligner="bwaUniq"),
+	output:
+		pin_out = "pindel/{group}.vs_dm6.bwaUniq.pindel_D.vcf",
+	params:
+		runmem_gb=16,
+		runtime="4:00:00",
+		cores=4,
+	message:
+		"looking for large variants in {wildcards.group} using PINDEL...."
+	run:
+		shell(""" mkdir -p pindel """)
+		ref_gen = ref_genome_by_name["dm6"]['path']
+		groupies = sampname_by_group[wildcards.group]
+		for i in range(0,len(groupies)):
+			shell(""" echo {input.bam_in[i]}"\t"$(bamtools stats -in {input.bam_in[i]} -insert | grep Median | cut -f 2 -d : | tr -d " ")"\t"pindel/{groupies[i]}.vs_dm6.bwaUniq.pindel > pindel/{wildcards.samp}.cfg """)
+		shell(""" pindel -T {params.cores} -f {ref_gen} -i pindel/{wildcards.samp}.cfg -o pindel/{wildcards.group}.vs_dm6.bwaUniq.pindel """)
+		shell(""" pindel2vcf -p pindel/{wildcards.group}.vs_dm6.bwaUniq.pindel_D -r {ref_gen} -R dm6 -d 19790717 -v {output.pin_out}.tmp """)
+		shell(""" cat {output.pin_out}.tmp | sed -e 's/pindel\///g' | sed -e 's/.vs_dm6.bwaUniq.pindel//g' > {output.pin_out} """)
+		shell(""" rm {output.pin_out}.tmp """)
+
+
+
+rule VCF_snpWinnower:
+	input:
+		vcf_in = "variants/{prefix}.vs_dm6.bwaUniq.vcf",
+	output:
+		alleleCounts_out= "analysis/{prefix}.alleleCounts.goodSnps.dpthFilt.biallelic.universal.out",
+		cleanVcf_out= "variants/{prefix}.vs_dm6.bwaUniq.alleleCounts.goodSnps.dpthFilt.biallelic.universal.vcf",
+	params:
+		runmem_gb=8,
+		runtime="4:00:00",
+		cores=4,
+		good_chroms = "--chr chr2L --chr chr2R --chr chr3L --chr chr3R --chr chr4 --chr chrX",
+		dpth_filt = 10,
+		max_uncalled = 0,
+	message:
+		"filtering the {wildcards.prefix} VCF for depth of coverage, site call percent, allele count, variant type .... "
+	run:
+		shell("""vcftools {params.good_chroms} --vcf {input.vcf_in} --max-missing-count {params.max_uncalled} --minDP {params.dpth_filt} --min-alleles 2 --max-alleles 2 --recode --recode-INFO-all --stdout | grep -v "TYPE=complex" | vcfallelicprimitives | vcftools --vcf -  --remove-indels --recode --recode-INFO-all --stdout > {output.cleanVcf_out}.tmp""")
+		shell("""cat <(grep "#" {output.cleanVcf_out}.tmp ) <(grep -v "#" {output.cleanVcf_out}.tmp | cut -f 4- | nl -n ln | awk '{{print "ndbu"$0}}'| tr -d " " | paste <(cat {output.cleanVcf_out}.tmp| grep -v "#" | cut -f 1,2) - ) > {output.cleanVcf_out} """)
+		shell("""rm {output.cleanVcf_out}.tmp""" )
+		shell("""vcftools --vcf {output.cleanVcf_out} --counts --stdout | tr ":" "\t" | tail -n +2 | nl -n ln  > {output.alleleCounts_out}""")
+
+
+
+#SNP distance spectrum 
+#bedtools closest -io -a <( cut -f 1-9 test.vcf) -b <(cut -f 1-9 test.vcf) -d | cut -f 1-5,10-14,19  > test.dist
+#see also bedtools cluster?
+#grep -w "ndbu39\|ndbu40" test.vcf | sed -e 's/:\S*//g' | cut -f 1-5,10-
+#join -o1.3,2.3,1.8,1.10,2.4,2.9,2.12  -j1 <(cat test.count.out | awk '{print$2":"$3"\t"$0}' | sort -k1,1 ) <( cat test.dist | awk '{print$1":"$2"\t"$0}' | sort -k1,1) | tr " " "\t" > dist_and_ac.test
+#cat dist_and_ac.test | awk '{if($3==1||$4==1)print;}' | awk '{if($7<10)print;}' > rare_neighbors.list
+
+
+rule windowedCover:
+	input:
+		windoze = "utils/{ref_gen}_w50_s50.windows.bed",
+		reads = "mapped_reads/{sample}.vs_{ref_gen}.bwaUniq.sort.bam",
+	output:
+		cov_file = "mapped_reads/coverage/{sample}.vs_{ref_gen}.bwaUniq.w50_s50.bed",
+	params:
+		runmem_gb=72,
+		runtime="1:00:00",
+		cores=2,
+	message:
+		"measuring the coverage of {wildcards.sample} mapped to {wildcards.ref_gen} in 50bp chunks .... "
+	run:
+		shell("mkdir -p mapped_reads/coverage/")
+		shell("bedtools coverage -a {input.windoze} -b {input.reads} > {output.cov_file}.tmp")
+		shell("python3 scripts/coverage_anomalizer.py -i {output.cov_file}.tmp -o {output.cov_file} ")
+		shell("rm {output.cov_file}.tmp")
+
+
+rule pullAllCoverage:
+	input:
+		lambda wildcards: expand("mapped_reads/coverage/{sample}.vs_dm6.bwaUniq.w50_s50.bed", sample=sampname_by_group['all'])
+	output:
+		"potato.txt"
+	params:
+		runmem_gb=1,
+		runtime="0:30",
+		cores=1,
+	message:
+		"bluhhhhhhhhhhhhhhhhh"
+	run:
+		shell("touch {output}")
+
+#cat covtest2.anom.bed | awk '{if($8 < -2 )print;}' | cut -f 1-3 | bedtools merge -i - > barespots.bed
+
+
+
+rule offspring_merger:
+	input:
+		alleleCounts_out= expand("analysis/{prefix}.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out",prefix=["deficiency","background"]),
+		novel_count = expand("analysis/{group}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.count",group=["deficiency","background"]),
+		back_count = expand("analysis/{group}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.back.count",group=["deficiency","background"]),
+	output:
+		merged_alleleCounts = "analysis/mutant.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.merged.out",
+		merged_novel = "analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.merged.count",
+		merged_back = "analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.back.merged.count",
+	params:
+		runmem_gb=8,
+		runtime="10:00",
+		cores=4,
+		chroms1 = "chr3L,chr3R",
+		chroms2 = "chr2L,chr2R,chr4,chrX",
+	message:
+		"interleaving the separately called deficiency and background results into a consolidated mutant analysis... "
+	run:
+		grep1 = "\|".join(params.chroms1.split(","))
+		grep2 = "\|".join(params.chroms2.split(","))
+		shell(
+			"""
+			cat {input.alleleCounts_out[0]} | grep -w "{grep1}" > {output.merged_alleleCounts}
+			cat {input.alleleCounts_out[1]} | grep -w "{grep2}" >> {output.merged_alleleCounts}
+
+			cat {input.novel_count[0]} | grep -w "{grep1}" > {output.merged_novel}
+			cat {input.novel_count[1]} | grep -w "{grep2}" >> {output.merged_novel}
+
+			cat {input.back_count[0]} | grep -w "{grep1}" > {output.merged_back}
+			cat {input.back_count[1]} | grep -w "{grep2}" >> {output.merged_back}
+			"""
+			)
 
 
 
@@ -473,8 +631,10 @@ rule write_report:
 		sequenced_reads_summary=["meta/sequenced_reads.dat"],
 		alignment_summaries = expand("meta/alignments.vs_dm6.{aligner}.summary", aligner=['bwa','bwaUniq']),
 		VCF_reports = "meta/allGroups.vs_dm6.bwaUniq.calledVariants.summary", #expand("meta/{treat}.vs_dm6.calledVariants.summary", treat="allGroups"),#treat=["control","mutant"]),
-		winnowed_VCF_counts = expand("analysis/{prefix}.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out", prefix=["control","mutant"]),
-		novelist_counts = expand("analysis/{prefix}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.{origin}.count", prefix=["control","mutant"], origin=["novel"]),
+		winnowed_VCF_counts = expand("analysis/{prefix}.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.out", prefix=["control","background","deficiency"]),
+		merged_winnowed_count = ["analysis/mutant.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.merged.out"],
+		novelist_counts = expand("analysis/{prefix}.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.{origin}.count", prefix=["control","background","deficiency"], origin=["novel"]),
+		merged_novelist_counts = ["analysis/mutant.vs_dm6.bwaUniq.alleleCounts.simpleIndels.dpthFilt.biallelic.universal.novel.merged.count"],
 		#VCF_contrasts = ["meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites_in_files", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.1", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.diff.sites.2", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc", "meta/VCFs/all_samples__bwa.contrast.all_samples__bwaUniq.dm6.disc.count",],
 	output:
 		pdf_out="thingy.pdf"

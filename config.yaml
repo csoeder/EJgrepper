@@ -6,7 +6,8 @@ data_sets:
       readsfile2: Df-Mcm5.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [none]
+      subgroups: [all,deficiency]
+      sex: M
       pedigree: parent      
     - name: Mcm5-A7
       paired: True
@@ -15,7 +16,8 @@ data_sets:
       readsfile2: Mcm5-A7.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [none]
+      subgroups: [all,deficiency]
+      sex: M
       pedigree: parent
     - name: Iso1
       paired: True
@@ -24,7 +26,7 @@ data_sets:
       readsfile2: iso1_n_2_CTTGTA.fastq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background]
       sex: M
       pedigree: parent
     - name: w1118m
@@ -34,7 +36,7 @@ data_sets:
       readsfile2: w1118m_n_2_CGATGT.fastq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background]
       pedigree: parent
       sex: F
     - name: mcm5-01
@@ -44,7 +46,7 @@ data_sets:
       readsfile2: mcm5-01.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-02
@@ -54,7 +56,7 @@ data_sets:
       readsfile2: mcm5-02.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-03
@@ -64,7 +66,7 @@ data_sets:
       readsfile2: mcm5-03.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-04
@@ -74,7 +76,7 @@ data_sets:
       readsfile2: mcm5-04.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-05
@@ -84,7 +86,7 @@ data_sets:
       readsfile2: mcm5-05.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-06
@@ -94,7 +96,7 @@ data_sets:
       readsfile2: mcm5-06.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-07
@@ -104,7 +106,7 @@ data_sets:
       readsfile2: mcm5-07.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-08
@@ -114,7 +116,7 @@ data_sets:
       readsfile2: mcm5-08.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-09
@@ -124,7 +126,7 @@ data_sets:
       readsfile2: mcm5-09.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-10
@@ -134,7 +136,7 @@ data_sets:
       readsfile2: mcm5-10.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-11
@@ -144,7 +146,7 @@ data_sets:
       readsfile2: mcm5-11.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-12
@@ -154,7 +156,7 @@ data_sets:
       readsfile2: mcm5-12.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-13
@@ -164,7 +166,7 @@ data_sets:
       readsfile2: mcm5-13.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-14
@@ -174,7 +176,7 @@ data_sets:
       readsfile2: mcm5-14.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-15
@@ -184,7 +186,7 @@ data_sets:
       readsfile2: mcm5-15.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-16
@@ -194,7 +196,7 @@ data_sets:
       readsfile2: mcm5-16.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-17
@@ -204,7 +206,7 @@ data_sets:
       readsfile2: mcm5-17.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-18
@@ -214,7 +216,7 @@ data_sets:
       readsfile2: mcm5-18.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-19
@@ -224,7 +226,7 @@ data_sets:
       readsfile2: mcm5-19.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-20
@@ -234,7 +236,7 @@ data_sets:
       readsfile2: mcm5-20.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-21
@@ -244,7 +246,7 @@ data_sets:
       readsfile2: mcm5-21.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-22
@@ -254,7 +256,7 @@ data_sets:
       readsfile2: mcm5-22.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-23
@@ -264,7 +266,7 @@ data_sets:
       readsfile2: mcm5-23.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-24
@@ -274,7 +276,7 @@ data_sets:
       readsfile2: mcm5-24.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-25
@@ -284,7 +286,7 @@ data_sets:
       readsfile2: mcm5-25.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-26
@@ -294,7 +296,7 @@ data_sets:
       readsfile2: mcm5-26.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-27
@@ -304,7 +306,7 @@ data_sets:
       readsfile2: mcm5-27.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: mcm5-28
@@ -314,7 +316,7 @@ data_sets:
       readsfile2: mcm5-28.R2.fq
       experimental: mutant
       source: talia
-      subgroups: [all,mutant]
+      subgroups: [all,background,deficiency]
       pedigree: child
       sex: M
     - name: CantonS
